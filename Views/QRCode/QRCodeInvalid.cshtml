@@ -1,0 +1,41 @@
+
+@{
+    ViewData["Title"] = "QR Code Non Valido";
+    var qrCodeContent = ViewBag.QRCodeContent as string ?? "";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-ban fa-5x text-danger"></i>
+                    </div>
+                    <h2 class="card-title">QR Code Non Valido</h2>
+                    <p class="card-text">
+                        Il QR Code fornito non è valido o non è mai stato inizializzato.
+                        Contatta l'amministratore per assistenza.
+                    </p>
+                    @if (!string.IsNullOrEmpty(qrCodeContent))
+                    {
+                        <div class="alert alert-info mt-3">
+                            <strong>Codice scansionato:</strong> @qrCodeContent
+                        </div>
+                    }
+                    <div class="mt-4">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary me-2">
+                            <i class="fas fa-home"></i> Torna alla Home
+                        </a>
+                        @if (!string.IsNullOrEmpty(qrCodeContent))
+                        {
+                            <a href="@Url.Action("Assign", "QRCode", new { content = qrCodeContent })" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Inizializza questo QR Code
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

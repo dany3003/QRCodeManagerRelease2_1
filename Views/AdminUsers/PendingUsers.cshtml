@@ -1,0 +1,111 @@
+@model IEnumerable<QRCodeManagerRelease2.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Utenti da Abilitare";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Utenti da Abilitare</h1>
+                <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                </a>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Nome</th>
+                                    <th>Cognome</th>
+                                    <th>Tipo</th>
+                                    <th>Azienda</th>
+                                    <th>Data Registrazione</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model)
+                                {
+                                    <tr>
+                                        <td>@user.Email</td>
+                                        <td>@user.FirstName</td>
+                                        <td>@user.LastName</td>
+                                        <td>@(user.IsAzienda ? "Azienda" : "Privato")</td>
+                                        <td>@user.NomeAzienda</td>
+                                        <td>@user.DataRegistrazione.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#enableModal@(user.Id)">
+                                                <i class="fas fa-check"></i> Abilita
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal per abilitazione -->
+                                    <div class="modal fade" id="enableModal@(user.Id)" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Abilita Utente: @user.Email</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="EnableUser" method="post" asp-controller="AdminUsers">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="userId" value="@user.Id" />
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Gruppo Cliente</label>
+                                                            <select name="customerGroupId" class="form-select" required>
+                                                                <option value="">Seleziona gruppo...</option>
+                                                                @foreach (var group in ViewBag.CustomerGroups as List<QRCodeManagerRelease2.Models.CustomerGroup>)
+                                                                {
+                                                                    <option value="@group.Id">@group.Name</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Azienda (opzionale)</label>
+                                                            <select name="companyId" class="form-select">
+                                                                <option value="">Nessuna azienda...</option>
+                                                                @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
+                                                                {
+                                                                    <option value="@company.Id">@company.RagioneSociale</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                        <button type="submit" class="btn btn-success">Abilita</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

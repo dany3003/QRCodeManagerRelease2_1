@@ -1,0 +1,92 @@
+
+@{
+    ViewData["Title"] = "Configurazione Email";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Configurazione Email</h1>
+                <a href="@Url.Action("Dashboard")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                </a>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Parametri SMTP</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="SaveEmailSettings" method="post">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Server SMTP</label>
+                                    <input name="smtpServer" class="form-control" value="smtp.gmail.com" required />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Porta</label>
+                                    <input name="smtpPort" type="number" class="form-control" value="587" required />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input name="username" class="form-control" value="info@sigiltech.it" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input name="password" type="password" class="form-control" value="TECH$2022" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input name="enableSsl" type="checkbox" class="form-check-input" checked />
+                                <label class="form-check-label">Abilita SSL</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salva Configurazione
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Test Email</h5>
+                </div>
+                <div class="card-body">
+                    <p>Invia una email di test per verificare la configurazione.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Email destinatario</label>
+                        <input type="email" class="form-control" id="testEmail" placeholder="test@example.com" />
+                    </div>
+                    <button type="button" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope"></i> Invia Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

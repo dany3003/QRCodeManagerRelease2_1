@@ -1,0 +1,139 @@
+
+@model QRCodeManagerRelease2.Models.Anomaly
+
+@{
+    ViewData["Title"] = "Dettagli Anomalia";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Dettagli Anomalia</h1>
+                <a href="@Url.Action("Anomalies")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna Indietro
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Informazioni Anomalia</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Tipo:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-@(Model.Tipo switch 
+                            {
+                                "CodiceNonCensito" => "warning",
+                                "AccessoNegato" => "danger",
+                                "ErroreAssociazione" => "info",
+                                _ => "secondary"
+                            })">
+                                @(Model.Tipo switch 
+                                {
+                                    "CodiceNonCensito" => "Codice Non Censito",
+                                    "AccessoNegato" => "Accesso Negato",
+                                    "ErroreAssociazione" => "Errore Associazione",
+                                    _ => Model.Tipo
+                                })
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-sm-4">Data Segnalazione:</dt>
+                        <dd class="col-sm-8">@Model.DataSegnalazione.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+                        
+                        <dt class="col-sm-4">Descrizione:</dt>
+                        <dd class="col-sm-8">@Model.Descrizione</dd>
+                        
+                        <dt class="col-sm-4">Codice Interessato:</dt>
+                        <dd class="col-sm-8">@(Model.CodiceInteressato ?? "-")</dd>
+                        
+                        <dt class="col-sm-4">Stato:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Risolta)
+                            {
+                                <span class="badge bg-success">Risolta</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Da Gestire</span>
+                            }
+                        </dd>
+                        
+                        @if (Model.Risolta)
+                        {
+                            <dt class="col-sm-4">Risolta Da:</dt>
+                            <dd class="col-sm-8">@(Model.RisoltaDa?.Email ?? "-")</dd>
+                            
+                            <dt class="col-sm-4">Data Risoluzione:</dt>
+                            <dd class="col-sm-8">@Model.DataRisoluzione?.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Informazioni Utente</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.User != null)
+                    {
+                        <dl class="row">
+                            <dt class="col-sm-4">Email:</dt>
+                            <dd class="col-sm-8">@Model.User.Email</dd>
+                            
+                            <dt class="col-sm-4">Nome:</dt>
+                            <dd class="col-sm-8">@Model.User.FirstName @Model.User.LastName</dd>
+                            
+                            <dt class="col-sm-4">Tipo:</dt>
+                            <dd class="col-sm-8">@(Model.User.IsAzienda ? "Azienda" : "Privato")</dd>
+                            
+                            @if (Model.User.IsAzienda)
+                            {
+                                <dt class="col-sm-4">Azienda:</dt>
+                                <dd class="col-sm-8">@(Model.User.Company?.RagioneSociale ?? Model.User.NomeAzienda ?? "-")</dd>
+                            }
+                            
+                            <dt class="col-sm-4">Gruppo:</dt>
+                            <dd class="col-sm-8">@(Model.User.CustomerGroup?.Name ?? "-")</dd>
+                            
+                            <dt class="col-sm-4">Data Registrazione:</dt>
+                            <dd class="col-sm-8">@Model.User.DataRegistrazione.ToString("dd/MM/yyyy")</dd>
+                        </dl>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Nessun utente associato</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @if (!Model.Risolta)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Azioni</h5>
+                        <form asp-action="ResolveAnomaly" method="post" style="display: inline;">
+                            <input type="hidden" name="anomalyId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Risolvi Anomalia
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

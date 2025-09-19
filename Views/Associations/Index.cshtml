@@ -1,0 +1,163 @@
+
+@model IEnumerable<QRCodeManagerRelease2.Models.QRCode>
+
+@{
+    ViewData["Title"] = "Associazioni QR-Link";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Associazioni QR-Link</h1>
+                <div>
+                <div class="btn-group  me-2">
+                    <a href="@Url.Action("ExportExcel", new { sortBy = ViewBag.SortBy, sortDir = ViewBag.SortDir, search = ViewBag.Search })" class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </a>
+                    <a href="@Url.Action("ExportPdf", new { sortBy = ViewBag.SortBy, sortDir = ViewBag.SortDir, search = ViewBag.Search })" class="btn btn-danger">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                </div>
+                <a href="@Url.Action("Dashboard", "Home")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                </a>
+                </div>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Filters and Export -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Cerca</label>
+                                <input type="text" class="form-control" name="search" value="@ViewBag.Search" placeholder="Codice, link o utilizzo...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ordina per</label>
+                                <select class="form-select" name="sortBy">
+                                    <option value="CreatedAt" selected="@(ViewBag.SortBy == "CreatedAt" ? "selected" : "")">Data Creazione</option>
+                                    <option value="content" selected="@(ViewBag.SortBy == "content" ? "selected" : "")">Codice</option>
+                                    <option value="destination" selected="@(ViewBag.SortBy == "destination" ? "selected" : "")">Link Destinazione</option>
+                                    <option value="calls" selected="@(ViewBag.SortBy == "calls" ? "selected" : "")">N° Chiamate</option>
+                                    <option value="lastcall" selected="@(ViewBag.SortBy == "lastcall" ? "selected" : "")">Ultima Chiamata</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Direzione</label>
+                                <select class="form-select" name="sortDir">
+                                    <option value="desc" selected=" @(ViewBag.SortDir == "desc" ? "selected" : "")">Decrescente</option>
+                                    <option value="asc" selected ="@(ViewBag.SortDir == "asc" ? "selected" : "")">Crescente</option> 
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">Applica Filtri</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Codice</th>
+                                    <th>Link Destinazione</th>
+                                    <th>Codice Utilizzo</th>
+                                    <th>N° Chiamate</th>
+                                    <th>Ultima Chiamata</th>
+                                    <th>Stato</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var qr in Model)
+                                {
+                                    <tr>
+                                        <td>@qr.Content</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(qr.DestinationLink))
+                                            {
+                                                <a href="@qr.DestinationLink" target="_blank">@qr.DestinationLink</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>@(qr.CodiceUtilizzo ?? "-")</td>
+                                        <td>
+                                            <span class="badge bg-info">@qr.NumeroChiamate</span>
+                                        </td>
+                                        <td>
+                                            @if (qr.UltimaChiamata.HasValue)
+                                            {
+                                                @qr.UltimaChiamata.Value.ToString("dd/MM/yyyy HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Mai</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (qr.Bloccato)
+                                            {
+                                                <span class="badge bg-danger">Disabilitato</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Attivo</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("Details", new { id = qr.Id })" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i> Dettagli
+                                            </a>
+                                            
+                                            <a href="@Url.Action("DownloadQRCode", new { id = qr.Id })" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-download"></i> Scarica QR
+                                            </a>
+                                            
+                                            @if (!qr.Bloccato)
+                                            {
+                                                <form asp-action="DisableQRCode" method="post" style="display: inline;">
+                                                    <input type="hidden" name="id" value="@qr.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="return confirm('Sei sicuro di voler disabilitare questo QR Code?')">
+                                                        <i class="fas fa-ban"></i> Disabilita
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

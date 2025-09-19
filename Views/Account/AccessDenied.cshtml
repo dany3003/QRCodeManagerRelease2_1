@@ -1,0 +1,58 @@
+
+@{
+    ViewData["Title"] = "Accesso Negato";
+}
+
+<div class="container">
+    <div class="row min-vh-100">
+        <div class="col-md-6 d-flex align-items-center">
+            <div class="w-100">
+                <div class="text-center mb-4">
+                    <img src="~/images/sigiltech-logo.png" alt="SigiltecH" class="mb-3" style="max-height: 80px;">
+                    <h2 class="text-danger">Accesso Negato</h2>
+                    <p class="text-muted">Non hai i permessi necessari per accedere a questa sezione</p>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Autorizzazione Richiesta</h4>
+                    <p class="mb-3">Per accedere a questa funzionalità è necessario avere i permessi appropriati.</p>
+                    <p class="mb-0">Se ritieni che questo sia un errore, contatta l'amministratore del sistema.</p>
+                </div>
+                
+                <div class="text-center">
+                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-primary me-2">
+                        <i class="fas fa-home"></i> Torna alla Dashboard
+                    </a>
+                    <a href="@Url.Action("Logout", "Account")" class="btn btn-outline-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 bg-light d-flex align-items-center">
+            <div class="w-100 p-5">
+                <div class="text-center">
+                    <h3 class="mb-4">Hai bisogno di aiuto?</h3>
+                    <p class="mb-4">Se pensi di dover avere accesso a questa sezione, contattaci</p>
+                    
+                    <div class="d-grid gap-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5><i class="fas fa-envelope text-primary"></i> Email</h5>
+                                <p class="mb-0">support@sigiltech.eu</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <h5><i class="fas fa-phone text-success"></i> Telefono</h5>
+                                <p class="mb-0">+39 XXX XXX XXXX</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,177 @@
+
+@model QRCodeManagerRelease2.ViewModels.CreateUserViewModel
+
+@{
+    ViewData["Title"] = "Nuovo Utente";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Nuovo Utente</h1>
+                <a href="@Url.Action("Users")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alla Lista Utenti
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="CreateUser" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nome</label>
+                                    <input asp-for="FirstName" class="form-control" required />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Cognome</label>
+                                    <input asp-for="LastName" class="form-control" required />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input asp-for="Email" type="email" class="form-control" required />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input asp-for="Password" type="password" class="form-control" required />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ConfirmPassword" class="control-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Gruppo Cliente</label>
+                                    <select asp-for="CustomerGroupId" class="form-select">
+                                        <option value="">Seleziona gruppo...</option>
+                                        @foreach (var group in ViewBag.CustomerGroups as List<QRCodeManagerRelease2.Models.CustomerGroup>)
+                                        {
+                                            <option value="@group.Id">@group.Name</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="CustomerGroupId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Azienda</label>
+                                    <select asp-for="CompanyId" class="form-select" id="companySelect">
+                                        <option value="">Nessuna azienda...</option>
+                                        @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
+                                        {
+                                            <option value="@company.Id" 
+                                                    data-ragione-sociale="@company.RagioneSociale"
+                                                    data-via="@company.Via"
+                                                    data-partita-iva="@company.PartitaIva">
+                                                @company.RagioneSociale
+                                            </option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsAzienda" type="checkbox" class="form-check-input" id="isAziendaCheck">
+                            <label class="form-check-label" for="isAziendaCheck">È un'Azienda?</label>
+                        </div>
+
+                        <div id="aziendaFields" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Nome Azienda</label>
+                                <input asp-for="NomeAzienda" class="form-control" id="nomeAziendaInput" />
+                                <span asp-validation-for="NomeAzienda" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Via</label>
+                                <input asp-for="Via" class="form-control" id="viaInput" />
+                                <span asp-validation-for="Via" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Partita IVA</label>
+                                        <input asp-for="PartitaIva" class="form-control" id="partitaIvaInput" />
+                                        <span asp-validation-for="PartitaIva" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Telefono</label>
+                                        <input asp-for="Telefono" class="form-control" />
+                                        <span asp-validation-for="Telefono" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Note</label>
+                                <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Note" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="Abilitato" type="checkbox" class="form-check-input" />
+                            <label class="form-check-label">Utente Abilitato</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Crea Utente</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('isAziendaCheck').addEventListener('change', function() {
+            var aziendaFields = document.getElementById('aziendaFields');
+            if (this.checked) {
+                aziendaFields.style.display = 'block';
+            } else {
+                aziendaFields.style.display = 'none';
+            }
+        });
+
+        document.getElementById('companySelect').addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var isAziendaCheck = document.getElementById('isAziendaCheck');
+            
+            if (this.value && selectedOption.getAttribute('data-ragione-sociale')) {
+                // Auto-populate fields when company is selected
+                isAziendaCheck.checked = true;
+                isAziendaCheck.dispatchEvent(new Event('change'));
+                
+                document.getElementById('nomeAziendaInput').value = selectedOption.getAttribute('data-ragione-sociale') || '';
+                document.getElementById('viaInput').value = selectedOption.getAttribute('data-via') || '';
+                document.getElementById('partitaIvaInput').value = selectedOption.getAttribute('data-partita-iva') || '';
+            }
+        });
+    </script>
+}

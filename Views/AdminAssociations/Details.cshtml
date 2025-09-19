@@ -1,0 +1,151 @@
+
+@model QRCodeManagerRelease2.Models.QRCode
+
+@{
+    ViewData["Title"] = "Dettagli Associazione";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Dettagli Associazione (Amministrazione)</h1>
+                <a href="@Url.Action("Associations")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Torna alle Associazioni
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Informazioni QR Code</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Codice:</strong> @Model.Content</p>
+                            <p><strong>Link Destinazione:</strong> 
+                                @if (!string.IsNullOrEmpty(Model.DestinationLink))
+                                {
+                                    <a href="@Model.DestinationLink" target="_blank">@Model.DestinationLink</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Non assegnato</span>
+                                }
+                            </p>
+                            <p><strong>Codice Utilizzo:</strong> @(Model.CodiceUtilizzo ?? "Non assegnato")</p>
+                            <p><strong>Creato da:</strong> @(Model.CreatedBy?.Email ?? "Sistema")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Data Creazione:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Numero Chiamate:</strong> <span class="badge bg-info">@Model.NumeroChiamate</span></p>
+                            <p><strong>Ultima Chiamata:</strong> 
+                                @if (Model.UltimaChiamata.HasValue)
+                                {
+                                    @Model.UltimaChiamata.Value.ToString("dd/MM/yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Mai</span>
+                                }
+                            </p>
+                            <p><strong>Stato:</strong> 
+                                @if (Model.Bloccato)
+                                {
+                                    <span class="badge bg-danger">Bloccato</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Attivo</span>
+                                }
+                            </p>
+                            <p><strong>Range di Appartenenza:</strong>
+                                @{
+                                    var codeRanges = ViewBag.CodeRanges as List<QRCodeManagerRelease2.Models.CodeRange>;
+                                    var foundRange = codeRanges?.FirstOrDefault(cr => string.Compare(Model.Content, cr.CodiceIniziale) >= 0 && string.Compare(Model.Content, cr.CodiceFinale) <= 0);
+                                }
+                                @if (foundRange != null)
+                                {
+                                    <span class="badge bg-primary">@foundRange.CodiceIniziale - @foundRange.CodiceFinale</span>
+                                    <br><small class="text-muted">@(foundRange.Company?.RagioneSociale ?? "Range Generale")</small>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Nessun range trovato</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Azioni</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Bloccato)
+                    {
+                        <form asp-controller="AdminAssociations" asp-action="BlockQRCode" method="post" style="margin-bottom: 10px;">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Sei sicuro di voler bloccare questo QR Code?')">
+                                <i class="fas fa-ban"></i> Blocca QR Code
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-controller="AdminAssociations" asp-action="UnblockQRCode" method="post" style="margin-bottom: 10px;">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success btn-sm w-100" onclick="return confirm('Sei sicuro di voler sbloccare questo QR Code?')">
+                                <i class="fas fa-check"></i> Sblocca QR Code
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.CallHistory != null && Model.CallHistory.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Storico Chiamate</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Ora</th>
+                                        <th>IP Address</th>
+                                        <th>User Agent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var call in Model.CallHistory.OrderByDescending(c => c.DataChiamata))
+                                    {
+                                        <tr>
+                                            <td>@call.DataChiamata.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                            <td>@call.IPAddress</td>
+                                            <td>@call.UserAgent</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,185 @@
+
+@model IEnumerable<QRCodeManagerRelease2.Models.ActivityLog>
+
+@{
+    ViewData["Title"] = "Log Attività";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Log Attività</h1>
+                <div>
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportActivityLogsExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportActivityLogsPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Filtra per Utente</label>
+                            <input type="text" class="form-control" id="userFilter" placeholder="Email utente...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipologia Azione</label>
+                            <select class="form-select" id="actionFilter">
+                                <option value="">Tutte le azioni</option>
+                                <option value="Creazione">Creazione</option>
+                                <option value="Modifica">Modifica</option>
+                                <option value="Cancellazione">Cancellazione</option>
+                                <option value="Abilitazione">Abilitazione</option>
+                                <option value="Disabilitazione">Disabilitazione</option>
+                                <option value="Blocco">Blocco</option>
+                                <option value="Sblocco">Sblocco</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" id="dateFilter">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary" onclick="applyFilters()">Applica Filtri</button>
+                            <button class="btn btn-secondary ms-2" onclick="clearFilters()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="activityLogsTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Data/Ora <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Utente <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Azione <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">Entità <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(4)">Dettagli <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(5)">IP Address <i class="fas fa-sort"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var log in Model)
+                                {
+                                    <tr>
+                                        <td>@log.DataOperazione.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                        <td>@(log.User?.Email ?? "Sistema")</td>
+                                        <td>
+                                            <span class="badge bg-@(log.Azione switch 
+                                            {
+                                                "Creazione" => "success",
+                                                "Modifica" => "warning",
+                                                "Cancellazione" => "danger",
+                                                "Abilitazione" => "info",
+                                                "Disabilitazione" => "secondary",
+                                                "Blocco" => "danger",
+                                                "Sblocco" => "success",
+                                                _ => "primary"
+                                            })">@log.Azione</span>
+                                        </td>
+                                        <td>@log.Entita</td>
+                                        <td>@log.Dettagli</td>
+                                        <td>@(log.IPAddress ?? "-")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sortTable(columnIndex) {
+    const table = document.getElementById("activityLogsTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    const header = table.tHead.rows[0].cells[columnIndex];
+    const isAsc = header.classList.contains('sort-desc');
+    
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+    
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+        
+        if (columnIndex === 0) {
+            const aDate = new Date(aText.split(' ')[0].split('/').reverse().join('-') + ' ' + aText.split(' ')[1]);
+            const bDate = new Date(bText.split(' ')[0].split('/').reverse().join('-') + ' ' + bText.split(' ')[1]);
+            return isAsc ? aDate - bDate : bDate - aDate;
+        }
+        
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function applyFilters() {
+    const userFilter = document.getElementById('userFilter').value.toLowerCase();
+    const actionFilter = document.getElementById('actionFilter').value.toLowerCase();
+    const dateFilter = document.getElementById('dateFilter').value;
+    const rows = document.querySelectorAll('#activityLogsTable tbody tr');
+    
+    rows.forEach(row => {
+        const userText = row.cells[1].textContent.toLowerCase();
+        const actionText = row.cells[2].textContent.toLowerCase();
+        const dateText = row.cells[0].textContent;
+        
+        let show = true;
+        
+        if (userFilter && !userText.includes(userFilter)) show = false;
+        if (actionFilter && !actionText.includes(actionFilter)) show = false;
+        if (dateFilter) {
+            const rowDate = dateText.split(' ')[0];
+            const filterDate = new Date(dateFilter).toLocaleDateString('it-IT');
+            if (rowDate !== filterDate) show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('userFilter').value = '';
+    document.getElementById('actionFilter').value = '';
+    document.getElementById('dateFilter').value = '';
+    
+    const rows = document.querySelectorAll('#activityLogsTable tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+</script>
+
+<style>
+th[onclick] {
+    cursor: pointer;
+    user-select: none;
+}
+th.sort-asc i::before { content: '\f0de'; }
+th.sort-desc i::before { content: '\f0dd'; }
+</style>

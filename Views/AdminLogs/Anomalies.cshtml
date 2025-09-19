@@ -1,0 +1,233 @@
+
+@model IEnumerable<QRCodeManagerRelease2.Models.Anomaly>
+
+@{
+    ViewData["Title"] = "Gestione Anomalie";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Gestione Anomalie</h1>
+
+                <div>
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportAnomaliesExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportAnomaliesPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Cerca</label>
+                            <input type="text" class="form-control" id="searchFilter" placeholder="Cerca in descrizione...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="typeFilter">
+                                <option value="">Tutti i tipi</option>
+                                <option value="CodiceNonCensito">Codice Non Censito</option>
+                                <option value="AccessoNegato">Accesso Negato</option>
+                                <option value="ErroreAssociazione">Errore Associazione</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Stato</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tutti gli stati</option>
+                                <option value="true">Risolte</option>
+                                <option value="false">Da Gestire</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary" onclick="applyFilters()">Applica Filtri</button>
+                            <button class="btn btn-secondary ms-2" onclick="clearFilters()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="anomaliesTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Data Segnalazione <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Utente <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Tipo <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">Descrizione <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(4)">Stato <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(5)">Risolto Da <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(6)">Data Risoluzione <i class="fas fa-sort"></i></th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var anomaly in Model)
+                                {
+                                    <tr class="@(anomaly.Risolta ? "" : "table-warning")" 
+                                        data-resolved="@anomaly.Risolta.ToString().ToLower()"
+                                        data-type="@anomaly.Tipo">
+                                        <td>@anomaly.DataSegnalazione.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@(anomaly.User?.Email ?? "-")</td>
+                                        <td>
+                                            <span class="badge bg-@(anomaly.Tipo switch 
+                                            {
+                                                "CodiceNonCensito" => "warning",
+                                                "AccessoNegato" => "danger",
+                                                "ErroreAssociazione" => "info",
+                                                _ => "secondary"
+                                            })">
+                                                @(anomaly.Tipo switch 
+                                                {
+                                                    "CodiceNonCensito" => "Codice Non Censito",
+                                                    "AccessoNegato" => "Accesso Negato",
+                                                    "ErroreAssociazione" => "Errore Associazione",
+                                                    _ => anomaly.Tipo
+                                                })
+                                            </span>
+                                        </td>
+                                        <td>@anomaly.Descrizione</td>
+                                        <td>
+                                            @if (anomaly.Risolta)
+                                            {
+                                                <span class="badge bg-success">Risolta</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Da Gestire</span>
+                                            }
+                                        </td>
+                                        <td>@(anomaly.RisoltaDa?.Email ?? "-")</td>
+                                        <td>
+                                            @if (anomaly.DataRisoluzione.HasValue)
+                                            {
+                                                @anomaly.DataRisoluzione.Value.ToString("dd/MM/yyyy HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!anomaly.Risolta)
+                                            {
+                                                <form asp-action="ResolveAnomaly" method="post" style="display: inline;">
+                                                    <input type="hidden" name="anomalyId" value="@anomaly.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check"></i> Risolvi
+                                                    </button>
+                                                </form>
+                                            }
+                                            <a href="@Url.Action("AnomalyDetails", new { id = anomaly.Id })" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i> Dettagli
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sortTable(columnIndex) {
+    const table = document.getElementById("anomaliesTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    const header = table.tHead.rows[0].cells[columnIndex];
+    const isAsc = header.classList.contains('sort-desc');
+    
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+    
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+        
+        if (columnIndex === 0 || columnIndex === 6) {
+            const aDate = new Date(aText.split(' ')[0].split('/').reverse().join('-') + ' ' + aText.split(' ')[1]);
+            const bDate = new Date(bText.split(' ')[0].split('/').reverse().join('-') + ' ' + bText.split(' ')[1]);
+            return isAsc ? aDate - bDate : bDate - aDate;
+        }
+        
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function applyFilters() {
+    const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#anomaliesTable tbody tr');
+    
+    rows.forEach(row => {
+        const description = row.cells[3].textContent.toLowerCase();
+        const type = row.getAttribute('data-type');
+        const resolved = row.getAttribute('data-resolved');
+        
+        let show = true;
+        
+        if (searchFilter && !description.includes(searchFilter)) show = false;
+        if (typeFilter && type !== typeFilter) show = false;
+        if (statusFilter && resolved !== statusFilter) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('searchFilter').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    
+    const rows = document.querySelectorAll('#anomaliesTable tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+</script>
+
+<style>
+th[onclick] {
+    cursor: pointer;
+    user-select: none;
+}
+th.sort-asc i::before { content: '\f0de'; }
+th.sort-desc i::before { content: '\f0dd'; }
+</style>

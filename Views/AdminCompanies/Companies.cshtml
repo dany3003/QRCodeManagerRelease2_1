@@ -1,0 +1,274 @@
+
+@model IEnumerable<QRCodeManagerRelease2.Models.Company>
+
+@{
+    ViewData["Title"] = "Gestione Aziende";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Gestione Aziende</h1>
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCompanyModal">
+                        <i class="fas fa-plus"></i> Nuova Azienda
+                    </button>
+                    <div class="btn-group">
+                        <a href="@Url.Action("ExportCompaniesExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportCompaniesPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <input type="text" id="tableSearch" class="form-control" placeholder="Filtra aziende...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="companiesTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Logo <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Ragione Sociale <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">P.IVA <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">Codice <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(4)">Descrizione <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(5)">Data Inserimento <i class="fas fa-sort"></i></th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var company in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(company.LogoPath))
+                                            {
+                                                <img src="@company.LogoPath" alt="Logo" style="max-width: 50px; max-height: 50px;" />
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Nessun logo</span>
+                                            }
+                                        </td>
+                                        <td>@company.RagioneSociale</td>
+                                        <td>@company.PartitaIva</td>
+                                        <td>@company.Codice</td>
+                                        <td>@company.Descrizione</td>
+                                        <td>@company.DataInserimento.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal@(company.Id)">
+                                                <i class="fas fa-edit"></i> Modifica
+                                            </button>
+                                            <form asp-action="DeleteCompany" method="post" style="display: inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa azienda?')">
+                                                <input type="hidden" name="id" value="@company.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i> Elimina
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal per modifica -->
+                                    <div class="modal fade" id="editModal@(company.Id)" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Modifica Azienda</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="UpdateCompany" method="post" enctype="multipart/form-data">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="id" value="@company.Id" />
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-md-8">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Ragione Sociale</label>
+                                                                    <input name="ragioneSociale" class="form-control" value="@company.RagioneSociale" required />
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Codice</label>
+                                                                    <input name="codice" class="form-control" value="@company.Codice" required />
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Descrizione</label>
+                                                                    <textarea name="descrizione" class="form-control" rows="3">@company.Descrizione</textarea>
+                                                                </div>
+                                                                 <div class="mb-3">
+                                                                       <label class="form-label">PartitaIva</label>
+                                                                       <textarea name="partitaIva" class="form-control" rows="3">@company.PartitaIva</textarea>
+                                                                 </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Logo</label>
+                                                                    <input type="file" name="logo" class="form-control" accept="image/*" />
+                                                                    <small class="form-text text-muted">Formati supportati: JPG, JPEG, PNG, GIF</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                @if (!string.IsNullOrEmpty(company.LogoPath))
+                                                                {
+                                                                    <div class="text-center">
+                                                                        <label class="form-label">Logo attuale</label>
+                                                                        <div>
+                                                                            <img src="@company.LogoPath" alt="Logo attuale" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                        <button type="submit" class="btn btn-primary">Salva</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuova Azienda -->
+<div class="modal fade" id="createCompanyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuova Azienda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateCompany" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ragione Sociale</label>
+                        <input name="RagioneSociale" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">P. IVA</label>
+                        <input name="PartitaIva" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Via</label>
+                        <input name="Via" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Codice</label>
+                        <input name="Codice" class="form-control" required />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Descrizione</label>
+                        <textarea name="Descrizione" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Logo</label>
+                        <input type="file" name="Logo" class="form-control" accept="image/*" />
+                        <small class="form-text text-muted">Formati supportati: JPG, JPEG, PNG, GIF</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function sortTable(columnIndex) {
+    const table = document.getElementById("companiesTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    const header = table.tHead.rows[0].cells[columnIndex];
+    const isAsc = header.classList.contains('sort-desc');
+    
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+    
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+        
+        if (columnIndex === 4) { // Data Inserimento column
+            const aDate = new Date(aText.split('/').reverse().join('-'));
+            const bDate = new Date(bText.split('/').reverse().join('-'));
+            return isAsc ? aDate - bDate : bDate - aDate;
+        }
+        
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+document.getElementById('tableSearch').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#companiesTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+</script>
+
+<style>
+th[onclick] {
+    cursor: pointer;
+    user-select: none;
+}
+th.sort-asc i::before { content: '\f0de'; }
+th.sort-desc i::before { content: '\f0dd'; }
+</style>

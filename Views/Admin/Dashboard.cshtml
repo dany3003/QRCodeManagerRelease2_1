@@ -1,0 +1,133 @@
+
+@{
+    ViewData["Title"] = "Dashboard Amministratore";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>Dashboard Amministratore</h1>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-user-clock text-warning"></i>
+                        Utenti da Abilitare
+                    </h5>
+                    <h2 class="text-warning">@ViewBag.PendingUsersCount</h2>
+                    <a href="@Url.Action("PendingUsers")" class="btn btn-warning">Gestisci</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                        Anomalie da Gestire
+                    </h5>
+                    <h2 class="text-danger">@ViewBag.AnomaliesCount</h2>
+                    <a href="@Url.Action("Anomalies")" class="btn btn-danger">Gestisci</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-users"></i>
+                        Gestione Utenti
+                    </h5>
+                    <p class="card-text">Gestisci tutti gli utenti registrati</p>
+                    <a href="@Url.Action("Users")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-building"></i>
+                        Gestione Aziende
+                    </h5>
+                    <p class="card-text">Gestisci le aziende registrate</p>
+                    <a href="@Url.Action("Companies")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-list-ol"></i>
+                        Range Codici
+                    </h5>
+                    <p class="card-text">Gestisci i range di codici</p>
+                    <a href="@Url.Action("CodeRanges")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-link"></i>
+                        Associazioni
+                    </h5>
+                    <p class="card-text">Gestisci le associazioni QR-Link</p>
+                    <a href="@Url.Action("Associations")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-history"></i>
+                        Log Attività
+                    </h5>
+                    <p class="card-text">Visualizza log delle attività</p>
+                    <a href="@Url.Action("ActivityLogs")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Statistiche
+                    </h5>
+                    <p class="card-text">Visualizza statistiche consumi</p>
+                    <a href="@Url.Action("Statistics")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-envelope"></i>
+                        Configurazione Email
+                    </h5>
+                    <p class="card-text">Configura parametri email</p>
+                    <a href="@Url.Action("EmailSettings")" class="btn btn-primary">Accedi</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

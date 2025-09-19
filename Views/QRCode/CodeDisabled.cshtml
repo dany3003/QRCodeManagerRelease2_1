@@ -1,0 +1,20 @@
+
+@{
+    ViewData["Title"] = "Link Disabilitato";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-ban text-danger" style="font-size: 4rem;"></i>
+                    <h2 class="mt-3">Link Disabilitato</h2>
+                    <p class="lead">Il link che hai richiesto è stato disabilitato.</p>
+                    <p>Contatta il proprietario del codice per maggiori informazioni.</p>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Torna alla Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

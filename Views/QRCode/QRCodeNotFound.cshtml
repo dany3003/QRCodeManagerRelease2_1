@@ -1,0 +1,28 @@
+
+@{
+    ViewData["Title"] = "QR Code Non Trovato";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-triangle fa-5x text-warning"></i>
+                    </div>
+                    <h2 class="card-title">QR Code Non Trovato</h2>
+                    <p class="card-text">
+                        Il QR Code che stai cercando non è stato trovato nel nostro sistema.
+                        Verifica che il codice sia corretto e riprova.
+                    </p>
+                    <div class="mt-4">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Torna alla Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

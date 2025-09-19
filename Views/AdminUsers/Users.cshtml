@@ -1,0 +1,308 @@
+@model IEnumerable<QRCodeManagerRelease2.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Gestione Utenti";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Gestione Utenti</h1>
+                <div>
+                    <a href="@Url.Action("CreateUser")" class="btn btn-success me-2">
+                        <i class="fas fa-plus"></i> Nuovo Utente
+                    </a>
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportUsersExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportUsersPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2">
+                            <input type="text" id="searchFilter" class="form-control" placeholder="Cerca utenti..." style="width: 250px;">
+                            <select id="statusFilter" class="form-select" style="width: 150px;">
+                                <option value="">Tutti gli stati</option>
+                                <option value="abilitato">Abilitato</option>
+                                <option value="disabilitato">Disabilitato</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Email <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Nome <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Cognome <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">Tipo <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(4)">Azienda <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(5)">Gruppo <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(6)">Stato <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(7)">Data Registrazione <i class="fas fa-sort"></i></th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model)
+                                {
+                                    <tr>
+                                        <td>@user.Email</td>
+                                        <td>@user.FirstName</td>
+                                        <td>@user.LastName</td>
+                                        <td>@(user.IsAzienda ? "Azienda" : "Privato")</td>
+                                        <td>@(user.Company?.RagioneSociale ?? user.NomeAzienda ?? "-")</td>
+                                        <td>@(user.CustomerGroup?.Name ?? "-")</td>
+                                        <td>
+                                            @if (user.Abilitato)
+                                            {
+                                                <span class="badge bg-success">Abilitato</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">Da Abilitare</span>
+                                            }
+                                        </td>
+                                        <td>@user.DataRegistrazione.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal@(user.Id)">
+                                                <i class="fas fa-edit"></i> Modifica
+                                            </button>
+                                            <form asp-action="ToggleUserStatus" method="post" style="display: inline;">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-@(user.Abilitato ? "warning" : "success")">
+                                                    <i class="fas fa-@(user.Abilitato ? "ban" : "check")"></i> 
+                                                    @(user.Abilitato ? "Disabilita" : "Abilita")
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal per modifica utente -->
+                                    <div class="modal fade" id="editModal@(user.Id)" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Modifica Utente: @user.Email</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="UpdateUser" method="post">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="userId" value="@user.Id" />
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Nome</label>
+                                                                    <input name="firstName" class="form-control" value="@user.FirstName" required />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Cognome</label>
+                                                                    <input name="lastName" class="form-control" value="@user.LastName" required />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email</label>
+                                                            <input name="email" type="email" class="form-control" value="@user.Email" required />
+                                                        </div>
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Gruppo Cliente</label>
+                                                                    <select name="customerGroupId" class="form-select">
+                                                                        <option value="">Seleziona gruppo...</option>
+                                                                        @foreach (var group in ViewBag.CustomerGroups as List<QRCodeManagerRelease2.Models.CustomerGroup>)
+                                                                        {
+                                                                            if (user.CustomerGroupId == group.Id)
+                                                                            {
+                                                                                <option value="@group.Id" selected="selected">@group.Name</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@group.Id">@group.Name</option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Azienda</label>
+                                                                    <select name="companyId" class="form-select">
+                                                                        <option value="">Nessuna azienda...</option>
+                                                                        @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
+                                                                        {
+                                                                            if (user.CompanyId == company.Id)
+                                                                            {
+                                                                                <option value="@company.Id" selected="selected">@company.RagioneSociale</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@company.Id">@company.RagioneSociale</option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        @if (user.IsAzienda)
+                                                        {
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Nome Azienda</label>
+                                                                <input name="nomeAzienda" class="form-control" value="@user.NomeAzienda" />
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Via</label>
+                                                                <input name="via" class="form-control" value="@user.Via" />
+                                                            </div>
+                                                            
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Partita IVA</label>
+                                                                        <input name="partitaIva" class="form-control" value="@user.PartitaIva" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Telefono</label>
+                                                                        <input name="telefono" class="form-control" value="@user.Telefono" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Note</label>
+                                                                <textarea name="note" class="form-control" rows="3">@user.Note</textarea>
+                                                            </div>
+                                                        }
+                                                        
+                                                        <div class="form-check">
+                                                            <input name="abilitato" type="checkbox" class="form-check-input" @(user.Abilitato ? "checked" : "") />
+                                                            <label class="form-check-label">Utente Abilitato</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                        <button type="submit" class="btn btn-primary">Salva Modifiche</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Funzioni per filtri, ordinamento ed esportazione
+        document.getElementById('searchFilter').addEventListener('keyup', function() {
+            var input = this.value.toLowerCase();
+            var table = document.getElementById('usersTable');
+            var rows = table.getElementsByTagName('tr');
+            
+            for (var i = 1; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName('td');
+                var found = false;
+                for (var j = 0; j < cells.length - 1; j++) {
+                    if (cells[j].textContent.toLowerCase().indexOf(input) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = found ? '' : 'none';
+            }
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            var filter = this.value.toLowerCase();
+            var table = document.getElementById('usersTable');
+            var rows = table.getElementsByTagName('tr');
+            
+            for (var i = 1; i < rows.length; i++) {
+                var statusCell = rows[i].getElementsByTagName('td')[6];
+                var status = statusCell.textContent.toLowerCase();
+                if (filter === '' || status.indexOf(filter) > -1) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        });
+
+        function sortTable(columnIndex) {
+            var table = document.getElementById('usersTable');
+            var rows = Array.from(table.rows).slice(1);
+            var isAscending = table.getAttribute('data-sort-direction') !== 'asc';
+            
+            rows.sort(function(a, b) {
+                var aVal = a.cells[columnIndex].textContent;
+                var bVal = b.cells[columnIndex].textContent;
+                
+                if (columnIndex === 7) { // Data column
+                    aVal = new Date(aVal.split('/').reverse().join('-'));
+                    bVal = new Date(bVal.split('/').reverse().join('-'));
+                }
+                
+                if (aVal < bVal) return isAscending ? -1 : 1;
+                if (aVal > bVal) return isAscending ? 1 : -1;
+                return 0;
+            });
+            
+            rows.forEach(function(row) {
+                table.appendChild(row);
+            });
+            
+            table.setAttribute('data-sort-direction', isAscending ? 'asc' : 'desc');
+        }
+
+        function exportToExcel() {
+            // Implementazione esportazione Excel
+            alert('Funzione esportazione Excel in fase di implementazione');
+        }
+
+        function exportToPDF() {
+            // Implementazione esportazione PDF
+            alert('Funzione esportazione PDF in fase di implementazione');
+        }
+    </script>
+}

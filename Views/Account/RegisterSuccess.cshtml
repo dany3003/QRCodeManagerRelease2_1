@@ -1,0 +1,28 @@
+
+@{
+    ViewData["Title"] = "Registrazione Completata";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h2 class="mt-3">Grazie della registrazione!</h2>
+                    <p class="lead">Verrai contattato al più presto da un consulente SigiltecH per essere abilitato al servizio.</p>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Torna alla Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["ShowCompanyMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            alert('Grazie della registrazione, verrai contattato al più presto da un consulente SigiltecH per essere abilitato al servizio');
+        });
+    </script>
+}

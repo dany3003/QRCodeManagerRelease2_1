@@ -1,0 +1,329 @@
+
+@model IEnumerable<QRCodeManagerRelease2.ViewModels.CompanyStatViewModel>
+
+@{
+    ViewData["Title"] = "Statistiche Consumi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Statistiche Consumi</h1>
+                <div>
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportStatisticsExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportStatisticsPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Filtra per azienda...">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tutti gli stati</option>
+                                <option value="OK">OK</option>
+                                <option value="Attenzione">Attenzione</option>
+                                <option value="Critico">Critico</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary" onclick="applyFilters()">Applica Filtri</button>
+                            <button class="btn btn-secondary ms-2" onclick="clearFilters()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="statisticsTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Azienda <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Codice <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Totale QR Codes <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">QR Codes Utilizzati <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(4)">QR Codes Rimanenti <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(5)">% Utilizzo <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(6)">Stato <i class="fas fa-sort"></i></th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var stat in Model)
+                                {
+                                    var percentageUsed = stat.TotalQRCodes > 0 ? (stat.UsedQRCodes * 100.0 / stat.TotalQRCodes) : 0;
+                                    var alertClass = percentageUsed > 80 ? "table-danger" : percentageUsed > 60 ? "table-warning" : "";
+                                    var status = stat.RemainingCodes < 10 ? "Critico" : stat.RemainingCodes < 50 ? "Attenzione" : "OK";
+                                    
+                                    <tr class="@alertClass" data-status="@status">
+                                        <td>@stat.Company.RagioneSociale</td>
+                                        <td>@stat.Company.Codice</td>
+                                        <td>
+                                            <span class="badge bg-primary">@stat.TotalQRCodes</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">@stat.UsedQRCodes</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@(stat.RemainingCodes < 10 ? "danger" : stat.RemainingCodes < 50 ? "warning" : "info")">
+                                                @stat.RemainingCodes
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-@(percentageUsed > 80 ? "danger" : percentageUsed > 60 ? "warning" : "success")" 
+                                                     role="progressbar" 
+                                                     style="width: @(percentageUsed)%"
+                                                     aria-valuenow="@percentageUsed" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    @percentageUsed.ToString("F1")%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (stat.RemainingCodes < 10)
+                                            {
+                                                <span class="badge bg-danger">Critico</span>
+                                            }
+                                            else if (stat.RemainingCodes < 50)
+                                            {
+                                                <span class="badge bg-warning">Attenzione</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">OK</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (stat.RemainingCodes < 50)
+                                            {
+                                                <button class="btn btn-sm btn-warning" onclick="contactCompany('@stat.Company.Id')">
+                                                    <i class="fas fa-phone"></i> Contatta
+                                                </button>
+                                            }
+                                            <button class="btn btn-sm btn-outline-info" onclick="showCompanyDetails('@stat.Company.Id')">
+                                                <i class="fas fa-chart-line"></i> Dettagli
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Totale Aziende</h5>
+                    <h2 class="text-success">@Model.Count()</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">QR Codes Totali</h5>
+                    <h2 class="text-primary">@Model.Sum(s => s.TotalQRCodes)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">QR Codes Utilizzati</h5>
+                    <h2 class="text-warning">@Model.Sum(s => s.UsedQRCodes)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">Aziende Critiche</h5>
+                    <h2 class="text-danger">@Model.Count(s => s.RemainingCodes < 10)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per Contatti Azienda -->
+<div class="modal fade" id="contactsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contatti Azienda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contactsModalBody">
+                <!-- Contacts will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per Dettagli Azienda -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dettagli Azienda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sortTable(columnIndex) {
+    const table = document.getElementById("statisticsTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    const header = table.tHead.rows[0].cells[columnIndex];
+    const isAsc = header.classList.contains('sort-desc');
+    
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+    
+    rows.sort((a, b) => {
+        let aText = a.cells[columnIndex].textContent.trim();
+        let bText = b.cells[columnIndex].textContent.trim();
+        
+        // Handle numeric columns
+        if (columnIndex >= 2 && columnIndex <= 5) {
+            aText = parseFloat(aText.replace(/[^\d.-]/g, '')) || 0;
+            bText = parseFloat(bText.replace(/[^\d.-]/g, '')) || 0;
+            return isAsc ? aText - bText : bText - aText;
+        }
+        
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function applyFilters() {
+    const searchFilter = document.getElementById('tableSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#statisticsTable tbody tr');
+    
+    rows.forEach(row => {
+        const companyText = row.cells[0].textContent.toLowerCase();
+        const status = row.getAttribute('data-status');
+        
+        let show = true;
+        
+        if (searchFilter && !companyText.includes(searchFilter)) show = false;
+        if (statusFilter && status !== statusFilter) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('tableSearch').value = '';
+    document.getElementById('statusFilter').value = '';
+    
+    const rows = document.querySelectorAll('#statisticsTable tbody tr');
+    rows.forEach(row => row.style.display = '');
+}
+
+async function contactCompany(companyId) {
+    try {
+        const response = await fetch(`@Url.Action("GetCompanyContacts")?companyId=${companyId}`);
+        const contacts = await response.json();
+        
+        let html = '<div class="table-responsive"><table class="table"><thead><tr><th>Nome</th><th>Cognome</th><th>Email</th><th>Telefono</th></tr></thead><tbody>';
+        
+        contacts.forEach(contact => {
+            html += `<tr>
+                <td>${contact.nome}</td>
+                <td>${contact.cognome}</td>
+                <td><a href="mailto:${contact.Email}">${contact.email}</a></td>
+                <td><a href="tel:${contact.Telefono}">${contact.telefono}</a></td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table></div>';
+        
+        document.getElementById('contactsModalBody').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('contactsModal')).show();
+    } catch (error) {
+        alert('Errore nel caricamento dei contatti');
+    }
+}
+
+async function showCompanyDetails(companyId) {
+    try {
+        const response = await fetch(`@Url.Action("GetCompanyDetails")?companyId=${companyId}`);
+           // console.log('Dati ricevuti:', response); // <--- AGGIUNTO
+                const details = await response.json();
+           // console.log('Dati ricevuti:', details); // <--- AGGIUNTO
+        const html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Informazioni Azienda</h6>
+                            <p><strong> Ragione Sociale:</strong> ${details.ragioneSociale}</p>
+                        <p><strong> Codice:</strong> ${details.codice || 'N/A'}</p>
+                    <p><strong> Via:</strong> ${details.via || 'N/A'}</p>
+                    <p><strong> Partita IVA:</strong> ${details.partitaIva || 'N/A'}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Statistiche</h6>
+                    <p><strong>QR Codes Totali:</strong> ${details.totalQRCodes}</p>
+                    <p><strong>QR Codes Utilizzati:</strong> ${details.usedQRCodes}</p>
+                    <p><strong>QR Codes Rimanenti:</strong> ${details.remainingCodes}</p>
+                    <p><strong>Utenti:</strong> ${details.users}</p>
+                    <p><strong>Range Codici:</strong> ${details.codeRanges}</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('detailsModalBody').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    } catch (error) {
+        alert('Errore nel caricamento dei dettagli');
+    }
+}
+</script>
+
+<style>
+th[onclick] {
+    cursor: pointer;
+    user-select: none;
+}
+th.sort-asc i::before { content: '\f0de'; }
+th.sort-desc i::before { content: '\f0dd'; }
+</style>

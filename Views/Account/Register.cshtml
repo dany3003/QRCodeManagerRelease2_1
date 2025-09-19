@@ -1,0 +1,132 @@
+
+@model QRCodeManagerRelease2.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Registrazione";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Registrazione</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="FirstName" class="control-label"></label>
+                                    <input asp-for="FirstName" class="form-control" />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="LastName" class="control-label"></label>
+                                    <input asp-for="LastName" class="form-control" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Email" class="control-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Password" class="control-label"></label>
+                                    <input asp-for="Password" class="form-control" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ConfirmPassword" class="control-label"></label>
+                                    <input asp-for="ConfirmPassword" class="form-control" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsAzienda" class="form-check-input" checked="checked" disabled="disabled" id="isAziendaCheck" />
+                                <label asp-for="IsAzienda" class="form-check-label"></label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3" id="nomeAziendaGroup" style="">
+                            <label asp-for="NomeAzienda" class="control-label"></label>
+                            <input asp-for="NomeAzienda" class="form-control" />
+                            <span asp-validation-for="NomeAzienda" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Via" class="control-label"></label>
+                            <input asp-for="Via" class="form-control" />
+                            <span asp-validation-for="Via" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3" id="partitaIvaGroup" style="">
+                                    <label asp-for="PartitaIva" class="control-label"></label>
+                                    <input asp-for="PartitaIva" class="form-control" />
+                                    <span asp-validation-for="PartitaIva" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Telefono" class="control-label"></label>
+                                    <input asp-for="Telefono" class="form-control" />
+                                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Note" class="control-label"></label>
+                            <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Note" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Registrati</button>
+                            <a asp-action="Login" class="btn btn-link">Hai già un account?</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAziendaCheck = document.getElementById('isAziendaCheck');
+            const nomeAziendaGroup = document.getElementById('nomeAziendaGroup');
+            const partitaIvaGroup = document.getElementById('partitaIvaGroup');
+            
+            isAziendaCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    nomeAziendaGroup.style.display = 'block';
+                    partitaIvaGroup.style.display = 'block';
+                } else {
+                    nomeAziendaGroup.style.display = 'none';
+                    partitaIvaGroup.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}

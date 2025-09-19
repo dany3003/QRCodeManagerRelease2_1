@@ -1,0 +1,91 @@
+
+@model QRCodeManagerRelease2.ViewModels.QRCodeAccessViewModel
+
+@{
+    ViewData["Title"] = "Accedi al QR Code";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Accesso al QR Code</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                    
+                    @if (Model.RequiresPassword)
+                    {
+                        <form asp-action="VerifyAccess" method="post" autocomplete="off">
+                            <input type="hidden" asp-for="QRCodeContent" />
+                            <input type="hidden" asp-for="ExtractedCode" />
+                            <div class="form-group mb-3">
+                                <label asp-for="Password" class="control-label"></label>
+                                <input asp-for="Password" class="form-control" type="password" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">ACCEDI</button>
+                            </div>
+                        </form>
+
+                        <div class="mt-4">
+                            <h5>Download</h5>
+                            <a href="@Url.Action("Download", new { code = Model.QRCodeContent })" class="btn btn-success">
+                                <i class="fas fa-download"></i> Scarica QR Code (PDF)
+                            </a>
+                            <a href="@Url.Action("Image", new { code = Model.QRCodeContent })" class="btn btn-outline-primary ml-2">
+                                Visualizza Immagine QR
+                            </a>
+                        </div>
+
+                    }
+
+                    else if (Model.AllowsDownload)
+                    {
+                        <form asp-action="FreeAccess" method="post" >
+                            <input type="hidden" asp-for="QRCodeContent" />
+                            <input type="hidden" asp-for="ExtractedCode" />
+                         
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">ACCEDI</button>
+                            </div>
+                        </form>
+
+                        <div class="mt-4">
+                            <h5>Download</h5>
+                            <a href="@Url.Action("Download", new { code = Model.QRCodeContent })" class="btn btn-success">
+                                <i class="fas fa-download"></i> Scarica QR Code (PDF)
+                            </a>
+                            <a href="@Url.Action("Image", new { code = Model.QRCodeContent })" class="btn btn-outline-primary ml-2">
+                                Visualizza Immagine QR
+                            </a>
+                        </div>
+                                        
+                    }
+                    else if (!string.IsNullOrEmpty(Model.DestinationLink))
+                    {
+                        <div class="alert alert-info">
+                            Sarai reindirizzato automaticamente...
+                        </div>
+                        <script>
+                            window.location.href = "@Model.DestinationLink";
+                        </script>
+                    }
+
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

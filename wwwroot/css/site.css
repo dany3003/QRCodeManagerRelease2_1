@@ -1,0 +1,45 @@
+
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+}
+
+.camera-container {
+  background: #000;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+#cameraPreview {
+  border-radius: 8px;
+  max-width: 100%;
+  height: auto;
+}
+
+.border-success {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}

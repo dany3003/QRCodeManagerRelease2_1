@@ -1,0 +1,266 @@
+
+@model IEnumerable<QRCodeManagerRelease2.Models.CodeRange>
+
+@{
+    ViewData["Title"] = "Gestione Range Codici";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Gestione Range Codici</h1>
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRangeModal">
+                        <i class="fas fa-plus"></i> Nuovo Range
+                    </button>
+
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportCodeRangesExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportCodeRangesPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Search and Export -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <form method="post" asp-action="FindCodeRange">
+                                <div class="input-group">
+                                    <input type="text" name="searchCode" class="form-control" placeholder="Cerca range per codice...">
+                                    <button class="btn btn-outline-primary" type="submit">
+                                        <i class="fas fa-search"></i> Cerca Range
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Filtra tabella...">
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="codeRangesTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Codice Iniziale <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Codice Finale <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Azienda <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">Data Inserimento <i class="fas fa-sort"></i></th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var range in Model)
+                                {
+                                    <tr>
+                                        <td>@range.CodiceIniziale</td>
+                                        <td>@range.CodiceFinale</td>
+                                        <td>@(range.Company?.RagioneSociale ?? "Generale")</td>
+                                        <td>@range.DataInserimento.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal@(range.Id)">
+                                                <i class="fas fa-edit"></i> Modifica
+                                            </button>
+                                            <form asp-action="DeleteCodeRange" method="post" style="display: inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questo range?')">
+                                                <input type="hidden" name="id" value="@range.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i> Elimina
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal per modifica -->
+                                    <div class="modal fade" id="editModal@(range.Id)" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Modifica Range</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="UpdateCodeRange" method="post">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="id" value="@range.Id" />
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Codice Iniziale</label>
+                                                            <input name="codiceIniziale" class="form-control" value="@range.CodiceIniziale" required />
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Codice Finale</label>
+                                                            <input name="codiceFinale" class="form-control" value="@range.CodiceFinale" required />
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Azienda (opzionale)</label>
+                                                            <select name="companyId" class="form-select">
+                                                                <option value="">Seleziona azienda...</option>
+                                                                @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
+                                                                {
+                                                                    if (range.CompanyId == company.Id)
+                                                                    {
+                                                                        <option value="@company.Id" selected="selected">@company.RagioneSociale</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@company.Id">@company.RagioneSociale</option>
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                        <button type="submit" class="btn btn-primary">Salva</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuovo Range -->
+<div class="modal fade" id="createRangeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuovo Range Codici</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateCodeRange" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Codice Iniziale</label>
+                        <input name="CodiceIniziale" class="form-control" required />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Codice Finale</label>
+                        <input name="CodiceFinale" class="form-control" required />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Azienda (opzionale)</label>
+                        <select name="CompanyId" class="form-select">
+                            <option value="">Seleziona azienda...</option>
+                            @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
+                            {
+                                <option value="@company.Id">@company.RagioneSociale</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function sortTable(columnIndex) {
+    const table = document.getElementById("codeRangesTable");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    // Determine sort direction
+    const header = table.tHead.rows[0].cells[columnIndex];
+    const isAsc = header.classList.contains('sort-desc');
+    
+    // Remove existing sort classes
+    document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    
+    // Add sort class
+    header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+    
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+        
+        // Try to parse as date for date column
+        if (columnIndex === 3) {
+            const aDate = new Date(aText.split('/').reverse().join('-'));
+            const bDate = new Date(bText.split('/').reverse().join('-'));
+            return isAsc ? aDate - bDate : bDate - aDate;
+        }
+        
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+// Table search functionality
+document.getElementById('tableSearch').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#codeRangesTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+</script>
+
+<style>
+th[onclick] {
+    cursor: pointer;
+    user-select: none;
+}
+th.sort-asc i::before {
+    content: '\f0de';
+}
+th.sort-desc i::before {
+    content: '\f0dd';
+}
+</style>

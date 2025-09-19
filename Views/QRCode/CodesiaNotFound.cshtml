@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Codice Non Configurato";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-search text-warning" style="font-size: 4rem;"></i>
+                    <h2 class="mt-3">Codice Sigillo Non Configurato</h2>
+                    <p class="lead">Il codice sigillo che hai scansionato non è stato ancora configurato.</p>
+                    <p>Per configurare il tuo codice sigillo, accedi all'applicazione.</p>
+                    @{
+
+                        var qrCodeContent = ViewBag.QRCodeContent as string ?? "";
+                    }
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="@Url.Action("Assign", "QRCode", new { content = qrCodeContent })" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Configura questo QR Code
+                        </a>
+                    }
+                    else
+                    {
+                        
+                       var loginUrl = !string.IsNullOrEmpty(qrCodeContent) 
+                        ? Url.Action("Login", "Account", new { returnUrl = Url.Action("Assign", "QRCode", new { content = qrCodeContent }) })
+                        : Url.Action("Login", "Account");
+                        
+                        <a href="@loginUrl" class="btn btn-primary">Accedi all'App</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

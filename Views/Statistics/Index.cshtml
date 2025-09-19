@@ -1,0 +1,243 @@
+@model QRCodeManagerRelease2.ViewModels.UserStatisticsViewModel
+
+@{
+    ViewData["Title"] = "Statistiche";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Le Mie Statistiche</h1>
+                <div>
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportMyStatisticsExcel")" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportMyStatisticsPdf")" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">QR Codes Totali</h5>
+                    <h2 class="text-primary">@Model.CompanyQRCodes</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-success">QR Codes Utilizzati</h5>
+                    <h2 class="text-success">@Model.CompanyUsedQRCodes</h2>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">QR Codes Personali</h5>
+                    <h2 class="text-warning">@Model.PersonalQRCodes</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-info">QR Codes Personali utilizati</h5>
+                    <h2 class="text-info">@Model.PersonalUsedQRCodes</h2>   @* .ToString("F1") *@
+                </div>
+            </div>
+        </div> 
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Cerca QR Code...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tutti gli stati</option>
+                                <option value="Attivo">Attivo</option>
+                                <option value="Disabilitato">Disabilitato</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="usageFilter">
+                                <option value="">Tutti</option>
+                                <option value="used">Utilizzati</option>
+                                <option value="unused">Non utilizzati</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary" onclick="applyFilters()">Filtra</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Codes Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>I Miei QR Codes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="qrCodesTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Codice <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(1)">Link Destinazione <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(2)">Codice Utilizzo <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(3)">N° Chiamate <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(4)">Ultima Chiamata <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(5)">Stato <i class="fas fa-sort"></i></th>
+                                    <th onclick="sortTable(6)">Data Creazione <i class="fas fa-sort"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var qr in Model.QRCodeDetails)
+                                {
+                                    <tr data-status="@(qr.QRCode.Bloccato ? "Disabilitato" : "Attivo")" data-usage="@(qr.QRCode.NumeroChiamate > 0 ? "used" : "unused")">
+                                        <td>@qr.QRCode.Content</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(qr.QRCode.DestinationLink))
+                                            {
+                                                <a href="@qr.QRCode.DestinationLink" target="_blank">@qr.QRCode.DestinationLink</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>@(qr.QRCode.CodiceUtilizzo ?? "-")</td>
+                                        <td>
+                                            <span class="badge bg-@(qr.QRCode.NumeroChiamate > 0 ? "success" : "secondary")">@qr.QRCode.NumeroChiamate</span>
+                                        </td>
+                                        <td>
+                                            @if (qr.QRCode.UltimaChiamata.HasValue)
+                                            {
+                                                @qr.QRCode.UltimaChiamata.Value.ToString("dd/MM/yyyy HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Mai</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (qr.QRCode.Bloccato)
+                                            {
+                                                <span class="badge bg-danger">Disabilitato</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Attivo</span>
+                                            }
+                                        </td>
+                                        <td>@qr.QRCode.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sortTable(columnIndex) {
+        const table = document.getElementById("qrCodesTable");
+        const tbody = table.tBodies[0];
+        const rows = Array.from(tbody.rows);
+
+        const header = table.tHead.rows[0].cells[columnIndex];
+        const isAsc = header.classList.contains('sort-desc');
+
+        document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+        header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
+
+        rows.sort((a, b) => {
+            let aText = a.cells[columnIndex].textContent.trim();
+            let bText = b.cells[columnIndex].textContent.trim();
+
+            // Handle numeric column (calls)
+            if (columnIndex === 3) {
+                aText = parseInt(aText.replace(/[^\d]/g, '')) || 0;
+                bText = parseInt(bText.replace(/[^\d]/g, '')) || 0;
+                return isAsc ? aText - bText : bText - aText;
+            }
+
+            // Handle date columns
+            if (columnIndex === 4 || columnIndex === 6) {
+                if (aText === "Mai" || aText === "-") aText = "01/01/1900";
+                if (bText === "Mai" || bText === "-") bText = "01/01/1900";
+
+                const aDate = new Date(aText.split(' ')[0].split('/').reverse().join('-'));
+                const bDate = new Date(bText.split(' ')[0].split('/').reverse().join('-'));
+                return isAsc ? aDate - bDate : bDate - aDate;
+            }
+
+            return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function applyFilters() {
+        const searchFilter = document.getElementById('tableSearch').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const usageFilter = document.getElementById('usageFilter').value;
+        const rows = document.querySelectorAll('#qrCodesTable tbody tr');
+
+        rows.forEach(row => {
+            const searchText = row.textContent.toLowerCase();
+            const status = row.getAttribute('data-status');
+            const usage = row.getAttribute('data-usage');
+
+            let show = true;
+
+            if (searchFilter && !searchText.includes(searchFilter)) show = false;
+            if (statusFilter && status !== statusFilter) show = false;
+            if (usageFilter && usage !== usageFilter) show = false;
+
+            row.style.display = show ? '' : 'none';
+        });
+    }
+</script>
+
+<style>
+    th[onclick] {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    th.sort-asc i::before {
+        content: '\f0de';
+    }
+
+    th.sort-desc i::before {
+        content: '\f0dd';
+    }
+</style>

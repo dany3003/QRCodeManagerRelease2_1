@@ -1,0 +1,238 @@
+@model QRCodeManagerRelease2.ViewModels.QRCodeViewModel
+
+@{
+    ViewData["Title"] = "Assegna QRCode";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>Assegna QRCode</h1>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    @TempData["WarningMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Content))
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle"></i> Stai inizializzando il QR Code: <strong>@Model.Content</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="Assign" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Contenuto QR Code</label>
+                            <div class="input-group">
+                                <input asp-for="Content" class="form-control" placeholder="Inserisci il contenuto del QR Code" value="@Model.Content" />
+                                <button type="button" id="scanButton" class="btn btn-outline-secondary">
+                                    <i class="fas fa-camera"></i> Scansiona
+                                </button>
+                            </div>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                            <div class="form-text">Inserisci manualmente o scansiona un QR Code con la fotocamera</div>
+                        </div>
+
+                        <div id="cameraContainer" style="display: none;" class="mb-3">
+                            <div class="card bg-dark">
+                                <div class="card-body text-center">
+                                    <video id="cameraPreview" class="img-fluid rounded" style="max-height: 400px; width: 100%;"></video>
+                                    <div class="mt-2">
+                                        <button type="button" id="stopCameraBtn" class="btn btn-sm btn-light">
+                                            <i class="fas fa-stop"></i> Ferma Fotocamera
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Details" class="form-label">Dettagli</label>
+                            <textarea asp-for="Details" class="form-control" rows="3" placeholder="Inserisci dettagli aggiuntivi..."></textarea>
+                            <span asp-validation-for="Details" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DestinationLink" class="form-label">Link di destinazione</label>
+                            <input asp-for="DestinationLink" class="form-control" placeholder="https://esempio.com" />
+                            <span asp-validation-for="DestinationLink" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CodiceUtilizzo" class="form-label">Codice Utilizzo</label>
+                            <input asp-for="CodiceUtilizzo" class="form-control" placeholder="Inserisci un codice per categorizzare" />
+                            <span asp-validation-for="CodiceUtilizzo" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="UsePassword" class="form-check-input" id="usePasswordCheck" />
+                                <label asp-for="UsePassword" class="form-check-label">Usa Password</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="passwordGroup" style="display: none;">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Inserisci la password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="AllowDownload" class="form-check-input" />
+                                <label asp-for="AllowDownload" class="form-check-label">Permetti Download</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input asp-for="AvvisamiPrimaVolta" class="form-check-input" />
+                                <label asp-for="AvvisamiPrimaVolta" class="form-check-label">Avvisami quando aperto la prima volta</label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-secondary me-md-2">Annulla</a>
+                            <button type="submit" class="btn btn-primary">Salva</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js"></script>
+
+    <script type="module">
+        import QrScanner from 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const usePasswordCheck = document.getElementById('usePasswordCheck');
+            const passwordGroup = document.getElementById('passwordGroup');
+            const scanButton = document.getElementById('scanButton');
+            const stopCameraBtn = document.getElementById('stopCameraBtn');
+            const cameraContainer = document.getElementById('cameraContainer');
+            const video = document.getElementById('cameraPreview');
+            const contentInput = document.getElementById('Content');
+
+            let qrScanner = null;
+
+            usePasswordCheck.addEventListener('change', function() {
+                passwordGroup.style.display = this.checked ? 'block' : 'none';
+            });
+
+            scanButton.addEventListener('click', startCamera);
+            stopCameraBtn.addEventListener('click', stopCamera);
+
+            // Auto-start camera on mobile devices
+             if (isMobile() && !contentInput.value) {
+                setTimeout(startCamera, 500); // Piccolo delay per mobile
+            }
+
+            function isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+
+            function startCamera() {
+                cameraContainer.style.display = 'block';
+                scanButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Avvio fotocamera...';
+                scanButton.disabled = true;
+
+                qrScanner = new QrScanner(
+                    video,
+                    result => {
+                        // QR Code trovato!
+                        contentInput.value = result.data;
+                        contentInput.classList.add('border-success');
+
+                        // Feedback visivo e vibrazione su mobile
+                        scanButton.innerHTML = '<i class="fas fa-check text-success"></i> QR Code trovato!';
+
+                        if (navigator.vibrate) {
+                            navigator.vibrate(200); // Vibrazione di feedback
+                        }
+
+                        setTimeout(() => {
+                            stopCamera();
+                        }, 1000);
+                    },
+                    {
+                        returnDetailedScanResult: true,
+                        highlightScanRegion: true,
+                        highlightCodeOutline: true,
+                        preferredCamera: 'environment',
+                        maxScansPerSecond: 10 // Riduco per migliorare performance su mobile
+                    }
+                );
+
+                qrScanner.start().then(() => {
+                    scanButton.innerHTML = '<i class="fas fa-camera"></i> Fotocamera attiva';
+                }).catch(err => {
+                    console.error("Errore accesso fotocamera: ", err);
+                    alert("Errore nell'accesso alla fotocamera. Verifica i permessi.");
+                    stopCamera();
+                });
+            }
+
+            function stopCamera() {
+                if (qrScanner) {
+                    qrScanner.stop();
+                    qrScanner.destroy();
+                    qrScanner = null;
+                }
+                cameraContainer.style.display = 'none';
+                scanButton.innerHTML = '<i class="fas fa-camera"></i> Scansiona';
+                scanButton.disabled = false;
+            }
+
+            // Validate URL
+            const destinationLinkInput = document.getElementById('DestinationLink');
+            if (destinationLinkInput) {
+                destinationLinkInput.addEventListener('blur', function() {
+                    const url = this.value;
+                    if (url && !isValidUrl(url)) {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            function isValidUrl(string) {
+                try {
+                    new URL(string);
+                    return true;
+                } catch (_) {
+                    return false;
+                }
+            }
+        });
+    </script>
+}
