@@ -77,7 +77,7 @@ namespace QRCodeManagerRelease2.Services
                 <br>
                 <p>Cordiali saluti,<br>Sistema QR-Link</p>
             ";
-            
+
             // Invia a entrambi gli indirizzi
             await SendEmailAsync("notifiche@sigiltech.it", subject, body);
             await SendEmailAsync("info@sigiltech.it", subject, body);

@@ -37,7 +37,7 @@
                                     <a class="nav-link text-dark" asp-controller="QRCode" asp-action="Assign">Assegna QRCode</a>
                                 </li> *@
                             
-                            @if (User.IsInRole("Admin"))
+                            @if (User.IsInRole("Admin") || User.IsInRole("Direzione"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin</a>

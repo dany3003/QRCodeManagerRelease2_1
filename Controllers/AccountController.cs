@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -123,7 +123,7 @@ namespace QRCodeManagerRelease2.Controllers
 
                     // 👉 2. POI, se non c'è un returnUrl, applica la logica di default basata sul ruolo.
                     // Se è admin, reindirizza alla dashboard admin.
-                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    if (await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Direzione"))
                     {
                         return RedirectToAction("Dashboard", "Admin");
                     }
