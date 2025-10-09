@@ -67,6 +67,13 @@
                                 Visualizza Immagine QR
                             </a>
                         </div>
+                        @if (!string.IsNullOrEmpty(Model.Details))
+                        {
+                            <div class="mt-4">
+                                <h5>Dettagli</h5>
+                                <textarea class="form-control" rows="3" readonly>@Model.Details</textarea>
+                            </div>
+                        }
                                         
                     }
                     else if (!string.IsNullOrEmpty(Model.DestinationLink))
