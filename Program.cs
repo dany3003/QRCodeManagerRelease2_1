@@ -8,7 +8,8 @@ using QRCodeManagerRelease2.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurazione database
-var connectionString = "Server=212.227.52.228;Database=QRCodeManagerDB_R2;User Id=DB2;Password=Sinergieit2023;TrustServerCertificate=true;";
+//var connectionString = "Server=212.227.52.228;Database=QRCodeManagerDB_R2;User Id=DB2;Password=Sinergieit2023;TrustServerCertificate=true;";
+var connectionString = "Server=SRV1SIG\\SQLEXPRESS;Database=QRCodeManagerDB_R2;User Id=DB3;Password=Sinergieit2025;TrustServerCertificate=true;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -93,7 +94,7 @@ app.MapGet("/s={code}", async (string code, ApplicationDbContext db, IServicePro
 
     if (qrCode == null)
     { 
-        httpContext.Session.SetString("ErrorMessage", "Il codice sigillo non è stato ancora configurato");
+        httpContext.Session.SetString("ErrorMessage", "Il codice sigillo non Ã¨ stato ancora configurato");
        
         return Results.Redirect($"/QRCode/CodesiaNotFound?code={code}");
 
@@ -104,7 +105,7 @@ app.MapGet("/s={code}", async (string code, ApplicationDbContext db, IServicePro
     if (qrCode.Bloccato)
     {
         // Codice disabilitato
-        httpContext.Session.SetString("ErrorMessage", "Il link è stato disabilitato");
+        httpContext.Session.SetString("ErrorMessage", "Il link Ã¨ stato disabilitato");
         return Results.Redirect("/QRCode/CodeDisabled");
     }
 
