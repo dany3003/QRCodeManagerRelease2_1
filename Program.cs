@@ -8,7 +8,7 @@ using QRCodeManagerRelease2.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurazione database
-var connectionString = "Server=SRV1SIG\\SQLEXPRESS;Database=QRCodeManagerDB_R2;User Id=DB3;Password=Sinergieit2025;TrustServerCertificate=true;";
+var connectionString = "Server=212.227.52.228;Database=QRCodeManagerDB_R2;User Id=DB2;Password=Sinergieit2023;TrustServerCertificate=true;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));

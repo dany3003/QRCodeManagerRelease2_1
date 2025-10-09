@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace QRCodeManagerRelease2.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Direzione")]
     [Route("Admin/[action]")]
     public class AdminUsersController : Controller
     {
@@ -77,6 +77,11 @@ namespace QRCodeManagerRelease2.Controllers
                 if (result.Succeeded)
                 {
                     await LogActivity("Creazione", "Utente", user.Id, $"Nuovo utente creato: {user.Email}");
+
+                    if(user.CustomerGroupId == "group-direzione")
+                    {
+                        await _userManager.AddToRoleAsync(user, "Direzione");
+                    }
                     
                     TempData["SuccessMessage"] = "Utente creato con successo!";
                     return RedirectToAction("Users");
@@ -130,6 +135,17 @@ namespace QRCodeManagerRelease2.Controllers
         public async Task<IActionResult> UpdateUser(string userId, string firstName, string lastName, string email, string customerGroupId, int? companyId, bool abilitato, string? nomeAzienda, string? via, string? partitaIva, string? telefono, string? note)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
+            if(user.CustomerGroupId == "group-direzione" && customerGroupId != "group-direzione")
+            {
+                await _userManager.RemoveFromRoleAsync(user, "Direzione");
+            }
+
+            if(user.CustomerGroupId != "group-direzione" && customerGroupId == "group-direzione")
+            {
+                await _userManager.AddToRoleAsync(user, "Direzione");
+            }
+
             if (user != null)
             {
                 user.FirstName = firstName;

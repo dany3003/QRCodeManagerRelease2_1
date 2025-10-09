@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace QRCodeManagerRelease2.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Direzione")]
     [Route("Admin/[action]")]
     public class AdminLogsController : Controller
     {

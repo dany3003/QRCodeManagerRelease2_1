@@ -15,7 +15,12 @@ namespace QRCodeManagerRelease2.Data
             {
                 await roleManager.CreateAsync(new IdentityRole("Admin"));
             }
-            
+
+            if (!await roleManager.RoleExistsAsync("Direzione"))
+            {
+                await roleManager.CreateAsync(new IdentityRole("Direzione"));
+            }
+
             if (!await roleManager.RoleExistsAsync("User"))
             {
                 await roleManager.CreateAsync(new IdentityRole("User"));
@@ -36,11 +41,32 @@ namespace QRCodeManagerRelease2.Data
                     Name = "Clienti",
                     Description = "Gruppo dei clienti standard"
                 };
-                
-                context.CustomerGroups.AddRange(adminGroup, clientGroup);
+
+                var direzioneGroup = new CustomerGroup
+                {
+                    Id = "group-direzione",
+                    Name = "Direzione",
+                    Description = "Gruppo della direzione"
+                };
+
+                context.CustomerGroups.AddRange(adminGroup, clientGroup, direzioneGroup);
                 await context.SaveChangesAsync();
             }
-            
+
+            //IMPLEMENTAZIONE GROUP-DIREZIONE, SE NON ESISTE, CREA IL GRUPPO
+            var direzioneGroupExist = await context.CustomerGroups.FindAsync("group-direzione");
+            if (direzioneGroupExist == null)
+            {
+                var direzioneGroup = new CustomerGroup
+                {
+                    Id = "group-direzione",
+                    Name = "Direzione",
+                    Description = "Gruppo della direzione"
+                };
+                context.CustomerGroups.AddRange(direzioneGroup);
+                await context.SaveChangesAsync();
+            }
+
             if (await userManager.FindByNameAsync("admin") == null)
             {
                 var adminUser = new ApplicationUser
@@ -64,7 +90,7 @@ namespace QRCodeManagerRelease2.Data
             {
                 var clientUser = new ApplicationUser
                 {
-                    UserName = "user",
+                    UserName = "user@qrmanager.com",
                     Email = "user@qrmanager.com",
                     EmailConfirmed = true,
                     FirstName = "Cliente",
@@ -76,6 +102,25 @@ namespace QRCodeManagerRelease2.Data
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(clientUser, "User");
+                }
+            }
+
+            if (await userManager.FindByNameAsync("direzione@qrmanager.com") == null)
+            {
+                var clientUser = new ApplicationUser
+                {
+                    UserName = "direzione@qrmanager.com",
+                    Email = "direzione@qrmanager.com",
+                    EmailConfirmed = true,
+                    FirstName = "Direzione",
+                    LastName = "User",
+                    CustomerGroupId = "group-direzione"
+                };
+
+                var result = await userManager.CreateAsync(clientUser, "direzione");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(clientUser, "Direzione");
                 }
             }
         }
