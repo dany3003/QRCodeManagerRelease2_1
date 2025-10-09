@@ -187,6 +187,33 @@ namespace QRCodeManagerRelease2.Controllers
             return RedirectToAction("Users");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string userId, string newPassword)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Utente non trovato!";
+                return RedirectToAction("Users");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            if (result.Succeeded)
+            {
+                await LogActivity("Reset Password", "Utente", userId, $"Password reimpostata per {user.Email}");
+                TempData["SuccessMessage"] = "Password reimpostata con successo!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Errore nel reset della password: " + string.Join(", ", result.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction("Users");
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> ExportUsersExcel()
         {

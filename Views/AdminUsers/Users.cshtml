@@ -34,6 +34,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
         </div>
     </div>
 
@@ -93,6 +101,9 @@
                                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal@(user.Id)">
                                                 <i class="fas fa-edit"></i> Modifica
                                             </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#resetPasswordModal@(user.Id)">
+                                                <i class="fas fa-key"></i> Reset Password
+                                            </button>
                                             <form asp-action="ToggleUserStatus" method="post" style="display: inline;">
                                                 <input type="hidden" name="userId" value="@user.Id" />
                                                 <button type="submit" class="btn btn-sm btn-outline-@(user.Abilitato ? "warning" : "success")">
@@ -102,6 +113,33 @@
                                             </form>
                                         </td>
                                     </tr>
+
+                                    <!-- Modal per reset password -->
+                                    <div class="modal fade" id="resetPasswordModal@(user.Id)" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Reset Password: @user.Email</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="ResetPassword" method="post">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="userId" value="@user.Id" />
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Nuova Password</label>
+                                                            <input name="newPassword" type="password" class="form-control" required minlength="6" />
+                                                            <small class="text-muted">La password deve essere di almeno 6 caratteri</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                        <button type="submit" class="btn btn-primary">Reset Password</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                     
                                     <!-- Modal per modifica utente -->
                                     <div class="modal fade" id="editModal@(user.Id)" tabindex="-1">
