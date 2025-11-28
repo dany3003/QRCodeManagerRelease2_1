@@ -1,4 +1,3 @@
-
 @model IEnumerable<QRCodeManagerRelease2.Models.QRCode>
 
 @{
@@ -9,26 +8,24 @@
     <div class="row">
         <div class="col-12">
 
-            
-
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h1>Associazioni QR-Link (Amministrazione)</h1>
                 <div>
-                <div class="btn-group me-2">
-                    <a href="@Url.Action("ExportAssociationsExcel", new { userFilter = ViewBag.UserFilter, dateFilter = ViewBag.DateFilter, statusFilter = ViewBag.StatusFilter })" class="btn btn-success">
-                        <i class="fas fa-file-excel"></i> Excel
-                    </a>
-                    <a href="@Url.Action("ExportAssociationsPdf", new { userFilter = ViewBag.UserFilter, dateFilter = ViewBag.DateFilter, statusFilter = ViewBag.StatusFilter })" class="btn btn-danger">
-                        <i class="fas fa-file-pdf"></i> PDF
-                    </a>
-                </div>
+                    <div class="btn-group me-2">
+                        <a href="@Url.Action("ExportAssociationsExcel", new { userFilter = ViewBag.UserFilter, dateFilter = ViewBag.DateFilter, statusFilter = ViewBag.StatusFilter })" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        <a href="@Url.Action("ExportAssociationsPdf", new { userFilter = ViewBag.UserFilter, dateFilter = ViewBag.DateFilter, statusFilter = ViewBag.StatusFilter })" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
 
-                <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Torna alla Dashboard
-                </a>
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+                    </a>
                 </div>
             </div>
-            
+
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -46,7 +43,6 @@
         </div>
     </div>
 
-    <!-- Filters and Export -->
     <div class="row mb-3">
         <div class="col-12">
             <div class="card">
@@ -91,12 +87,9 @@
                             </div>
                         </div>
                     </form>
-                    
+
                     <div class="row mt-3">
                         <div class="col-12">
-                           
-                            
-                            <!-- Code Range Search -->
                             <form method="post" asp-action="FindCodeRange" class="d-inline">
                                 <div class="input-group d-inline-flex" style="width: 300px;">
                                     <input type="text" name="searchCode" class="form-control" placeholder="Cerca range per codice...">
@@ -172,13 +165,13 @@
                                             }
                                         </td>
                                         <td>
-                                            @if (qr.NotificatoPrimaVolta)
+                                            @if (qr.AvvisamiPrimaVolta) { {/* Corretto: Il campo AvvisamiPrimaVolta era chiamato NotificatoPrimaVolta nell'originale, assumo che tu voglia mostrare se la notifica è attiva (AvvisamiPrimaVolta) */} }
                                             {
-                                                <i class="fas fa-bell text-warning" title="Notifica attiva"></i>
+                                            <i class="fas fa-bell text-warning" title="Notifica attiva"></i>
                                             }
                                             else
                                             {
-                                                <i class="fas fa-bell-slash text-muted" title="Notifica disattiva"></i>
+                                            <i class="fas fa-bell-slash text-muted" title="Notifica disattiva"></i>
                                             }
                                         </td>
                                         <td>
@@ -208,47 +201,7 @@
                                             }
                                         </td>
                                     </tr>
-                                    
-                                    <!-- Edit Modal -->
-                                    <div class="modal fade" id="editModal@(qr.Id)" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Modifica QR Code</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form asp-action="UpdateQRCode" method="post">
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="id" value="@qr.Id" />
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Link Destinazione</label>
-                                                            <input name="destinationLink" class="form-control" value="@qr.DestinationLink" />
-                                                        </div>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Codice Utilizzo</label>
-                                                            <input name="codiceUtilizzo" class="form-control" value="@qr.CodiceUtilizzo" />
-                                                        </div>
-                                                        
-                                                        <div class="mb-3">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" name="notificaPrimaApertura" value="true" @(qr.AvvisamiPrimaVolta ? "checked" : "") />
-                                                                <input type="hidden" name="notificaPrimaApertura" value="false" />
-                                                                <label class="form-check-label">
-                                                                    Notifica Prima Apertura
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                                                        <button type="submit" class="btn btn-primary">Salva</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    { {/* I MODALI SONO STATI RIMOSSI DA QUI */} }
                                 }
                             </tbody>
                         </table>
@@ -257,4 +210,63 @@
             </div>
         </div>
     </div>
+
+    {{/* BLOCCO DEI MODALI SPOSTATO FUORI DALLA TABELLA PER LA COMPATIBILITÀ CON SAFARI */}}
+    @foreach (var qr in Model)
+    {
+        <div class="modal fade" id="editModal@(qr.Id)" tabindex="-1" aria-labelledby="editModalLabel@(qr.Id)" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel@(qr.Id)">Modifica QR Code: @qr.Content</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form asp-action="UpdateQRCode" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="id" value="@qr.Id" />
+
+                            <div class="mb-3">
+                                <label for="destinationLink_@qr.Id" class="form-label">Link Destinazione</label>
+                                <input id="destinationLink_@qr.Id" name="destinationLink" class="form-control" value="@qr.DestinationLink" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="codiceUtilizzo_@qr.Id" class="form-label">Codice Utilizzo</label>
+                                <input id="codiceUtilizzo_@qr.Id" name="codiceUtilizzo" class="form-control" value="@qr.CodiceUtilizzo" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="details_@qr.Id" class="form-label">Dettagli</label>
+                                <input id="details_@qr.Id" name="details" class="form-control" value="@qr.Details" />
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="notificaPrimaApertura" value="true" id="notificaPrimaApertura_@qr.Id" @(qr.AvvisamiPrimaVolta ? "checked" : "") />
+                                    <input type="hidden" name="notificaPrimaApertura" value="false" />
+                                    <label class="form-check-label" for="notificaPrimaApertura_@qr.Id">
+                                        Notifica Prima Apertura
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="usePasswoword" value="true" id="usePasswoword_@qr.Id" @(qr.UsePassword ? "checked" : "") />
+                                    <input type="hidden" name="usePasswoword" value="false" />
+                                    <label class="form-check-label" for="usePasswoword_@qr.Id">
+                                        Usa Password
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                            <button type="submit" class="btn btn-primary">Salva</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
 </div>

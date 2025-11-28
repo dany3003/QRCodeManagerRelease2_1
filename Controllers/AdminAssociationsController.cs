@@ -71,11 +71,13 @@ namespace QRCodeManagerRelease2.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateQRCode(int id, string destinationLink, string codiceUtilizzo, bool notificaPrimaApertura)
+        public async Task<IActionResult> UpdateQRCode(int id, string destinationLink, string codiceUtilizzo, bool notificaPrimaApertura, string details, bool usePasswoword)
         {
             var qrCode = await _context.QRCodes.FindAsync(id);
             if (qrCode != null)
             {
+                qrCode.UsePassword = usePasswoword;
+                qrCode.Details = details;
                 qrCode.DestinationLink = destinationLink;
                 qrCode.CodiceUtilizzo = codiceUtilizzo;
                 qrCode.AvvisamiPrimaVolta = notificaPrimaApertura;

@@ -1,12 +1,13 @@
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRCodeManagerRelease2.Data;
+using QRCodeManagerRelease2.Models;
 using QRCodeManagerRelease2.Services;
-using System.Security.Claims;
-using System.Drawing;
 using QRCoder;
-using System.Drawing.Imaging;
 
 namespace QRCodeManagerRelease2.Controllers
 {
@@ -188,6 +189,45 @@ namespace QRCodeManagerRelease2.Controllers
                 TempData["ErrorMessage"] = "Errore nella generazione del QR Code";
                 return RedirectToAction("Index");
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateQRCode(int id, string destinationLink, string codiceUtilizzo, bool notificaPrimaApertura, string details, bool usePasswoword)
+        {
+            var qrCode = await _context.QRCodes.FindAsync(id);
+            if (qrCode != null)
+            {
+                qrCode.UsePassword = usePasswoword;
+                qrCode.Details = details;
+               // qrCode.DestinationLink = destinationLink;
+                qrCode.CodiceUtilizzo = codiceUtilizzo;
+                qrCode.AvvisamiPrimaVolta = notificaPrimaApertura;
+                await _context.SaveChangesAsync();
+
+                await LogActivity("Modifica", "QRCode", id, $"QR Code {qrCode.Content} modificato");
+
+                TempData["SuccessMessage"] = "QR Code modificato con successo!";
+            }
+            return RedirectToAction("Index");
+        }
+
+        private async Task LogActivity(string azione, string entita, object entitaId, string dettagli)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            var log = new ActivityLog
+            {
+                UserId = currentUserId,
+                Azione = azione,
+                Entita = entita,
+                EntitaId = entitaId is int ? (int)entitaId : null,
+                Dettagli = dettagli,
+                IPAddress = ipAddress
+            };
+
+            _context.ActivityLogs.Add(log);
+            await _context.SaveChangesAsync();
         }
 
 
