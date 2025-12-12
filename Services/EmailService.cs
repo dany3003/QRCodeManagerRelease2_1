@@ -50,7 +50,41 @@ namespace QRCodeManagerRelease2.Services
             
             await SendEmailAsync(userEmail, subject, body);
         }
-        
+
+
+        public async Task SendPasswordResetEmailAsync(string userEmail, string resetLink)
+        {
+            var subject = "Reimposta la tua password - QRCodeManager";
+
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <div style='background-color: #007bff; color: white; padding: 20px; text-align: center;'>
+                        <h1 style='margin: 0;'>Reimposta Password</h1>
+                    </div>
+                    <div style='padding: 30px; background-color: #f9f9f9;'>
+                        <p>Ciao,</p>
+                        <p>Abbiamo ricevuto una richiesta per reimpostare la password del tuo account QRCodeManager.</p>
+                        <p>Clicca sul pulsante qui sotto per creare una nuova password:</p>
+                        <div style='text-align: center; margin: 30px 0;'>
+                            <a href='{resetLink}' style='background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>
+                                Reimposta Password
+                            </a>
+                        </div>
+                        <p style='color: #666; font-size: 14px;'>Se non hai richiesto tu il reset della password, ignora questa email.</p>
+                        <p style='color: #666; font-size: 14px;'>Questo link scadrà tra 24 ore.</p>
+                        <hr style='border: none; border-top: 1px solid #ddd; margin: 20px 0;'>
+                        <p style='color: #999; font-size: 12px;'>Se il pulsante non funziona, copia e incolla questo link nel tuo browser:</p>
+                        <p style='color: #999; font-size: 12px; word-break: break-all;'>{resetLink}</p>
+                    </div>
+                    <div style='background-color: #333; color: white; padding: 15px; text-align: center; font-size: 12px;'>
+                        <p style='margin: 0;'>© {DateTime.Now.Year} Sigiltech - Tutti i diritti riservati</p>
+                    </div>
+                </div>
+            ";
+
+            await SendEmailAsync(userEmail, subject, body);
+        }
+
         public async Task SendRegistrationNotificationAsync(string userEmail, string firstName, string lastName, 
             bool isAzienda, string? nomeAzienda, string via, string? partitaIva, string? telefono, string? note)
         {

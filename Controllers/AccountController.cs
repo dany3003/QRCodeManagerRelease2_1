@@ -1,4 +1,4 @@
-    using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -170,6 +170,11 @@ namespace QRCodeManagerRelease2.Controllers
         //    return View();
         //}
 
+
+
+
+
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Logout()
@@ -186,6 +191,97 @@ namespace QRCodeManagerRelease2.Controllers
         {
             return View();
         }
+
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                ModelState.AddModelError(string.Empty, "Inserisci un indirizzo email valido.");
+                return View();
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user != null)
+            {
+                // Genera token per reset password
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                // Crea il link per il reset
+                var resetLink = Url.Action("ResetPassword", "Account",
+                    new { email = user.Email, token = token }, Request.Scheme);
+
+                // Invia email con il link di reset
+                await _emailService.SendPasswordResetEmailAsync(user.Email, resetLink);
+
+                await LogActivity("Password Reset Richiesto", "Utente", user.Id,
+                    $"Richiesta reset password per: {user.Email}");
+            }
+
+            // Mostra sempre messaggio di successo per sicurezza (non rivelare se email esiste)
+            TempData["SuccessMessage"] = "Se l'indirizzo email è registrato, riceverai un'email con le istruzioni per reimpostare la password.";
+            return View("ForgotPasswordConfirmation");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login");
+            }
+
+            ViewData["Email"] = email;
+            ViewData["Token"] = token;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string email, string token, string password, string confirmPassword)
+        {
+            if (password != confirmPassword)
+            {
+                ModelState.AddModelError(string.Empty, "Le password non corrispondono.");
+                ViewData["Email"] = email;
+                ViewData["Token"] = token;
+                return View();
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
+
+            if (result.Succeeded)
+            {
+                await LogActivity("Password Reset Completato", "Utente", user.Id,
+                    $"Password reimpostata per: {user.Email}");
+
+                TempData["SuccessMessage"] = "Password reimpostata con successo! Ora puoi effettuare il login.";
+                return RedirectToAction("Login");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            ViewData["Email"] = email;
+            ViewData["Token"] = token;
+            return View();
+        }
+
 
         [HttpGet]
         [Authorize]

@@ -13,7 +13,7 @@
                     <i class="fas fa-arrow-left"></i> Torna alla Dashboard
                 </a>
             </div>
-            
+
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -57,49 +57,7 @@
                                             </button>
                                         </td>
                                     </tr>
-                                    
-                                    <!-- Modal per abilitazione -->
-                                    <div class="modal fade" id="enableModal@(user.Id)" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Abilita Utente: @user.Email</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form asp-action="EnableUser" method="post" asp-controller="AdminUsers">
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="userId" value="@user.Id" />
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Gruppo Cliente</label>
-                                                            <select name="customerGroupId" class="form-select" required>
-                                                                <option value="">Seleziona gruppo...</option>
-                                                                @foreach (var group in ViewBag.CustomerGroups as List<QRCodeManagerRelease2.Models.CustomerGroup>)
-                                                                {
-                                                                    <option value="@group.Id">@group.Name</option>
-                                                                }
-                                                            </select>
-                                                        </div>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Azienda (opzionale)</label>
-                                                            <select name="companyId" class="form-select">
-                                                                <option value="">Nessuna azienda...</option>
-                                                                @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
-                                                                {
-                                                                    <option value="@company.Id">@company.RagioneSociale</option>
-                                                                }
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                                                        <button type="submit" class="btn btn-success">Abilita</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    { {/* IL MODALE È STATO SPOSTATO QUI SOTTO */} }
                                 }
                             </tbody>
                         </table>
@@ -108,4 +66,49 @@
             </div>
         </div>
     </div>
+
+    @foreach (var user in Model)
+    {
+        <div class="modal fade" id="enableModal@(user.Id)" tabindex="-1" aria-labelledby="enableModalLabel@(user.Id)" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="enableModalLabel@(user.Id)">Abilita Utente: @user.Email</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form asp-action="EnableUser" method="post" asp-controller="AdminUsers">
+                        <div class="modal-body">
+                            <input type="hidden" name="userId" value="@user.Id" />
+
+                            <div class="mb-3">
+                                <label class="form-label">Gruppo Cliente</label>
+                                <select name="customerGroupId" class="form-select" required>
+                                    <option value="">Seleziona gruppo...</option>
+                                    @foreach (var group in ViewBag.CustomerGroups as List<QRCodeManagerRelease2.Models.CustomerGroup>)
+                                    {
+                                        <option value="@group.Id">@group.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Azienda (opzionale)</label>
+                                <select name="companyId" class="form-select">
+                                    <option value="">Nessuna azienda...</option>
+                                    @foreach (var company in ViewBag.Companies as List<QRCodeManagerRelease2.Models.Company>)
+                                    {
+                                        <option value="@company.Id">@company.RagioneSociale</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                            <button type="submit" class="btn btn-success">Abilita</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
 </div>

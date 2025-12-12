@@ -201,8 +201,7 @@
                                             }
                                         </td>
                                     </tr>
-                                    { {/* I MODALI SONO STATI RIMOSSI DA QUI */} }
-                                }
+                                                                   }
                             </tbody>
                         </table>
                     </div>
@@ -211,7 +210,6 @@
         </div>
     </div>
 
-    {{/* BLOCCO DEI MODALI SPOSTATO FUORI DALLA TABELLA PER LA COMPATIBILITÀ CON SAFARI */}}
     @foreach (var qr in Model)
     {
         <div class="modal fade" id="editModal@(qr.Id)" tabindex="-1" aria-labelledby="editModalLabel@(qr.Id)" aria-hidden="true">
