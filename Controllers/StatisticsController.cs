@@ -21,49 +21,81 @@ namespace QRCodeManagerRelease2.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? userId = null)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.FindByIdAsync(currentUserId);
+            var currentUser = await _userManager.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.Id == currentUserId);
 
             if (currentUser?.CompanyId == null)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
 
+
+            // Recupera utenti del gruppo/azienda
+            var groupUsers = await _userManager.Users
+                .Where(u => u.CompanyId == currentUser.CompanyId ) //&& u.IsApproved
+                .OrderBy(u => u.LastName)
+                .ThenBy(u => u.FirstName)
+                .ToListAsync();
+
             var stats = new UserStatisticsViewModel
             {
                 User = currentUser,
-                Company = currentUser.Company
+                Company = currentUser.Company,
+                SelectedUserId = userId,
+                GroupUsers = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                {
+                    new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = "", Text = "Tutti gli utenti" }
+                }
             };
 
-            // QR Codes personali dell'utente
-            var userQRCodes = await _context.QRCodes
-                .Where(q => q.CreatedBy.Id == currentUserId)
-                .ToListAsync();
-
-            stats.PersonalQRCodes = userQRCodes.Count;
-            stats.PersonalUsedQRCodes = userQRCodes.Count(q => q.NumeroChiamate > 0);
-
-            // QR Codes dell'azienda
-            var companyQRCodes = await _context.QRCodes
-                .Include(q => q.CreatedBy)
-                .Where(q => q.CreatedBy != null && q.CreatedBy.CompanyId == currentUser.CompanyId)
-                .ToListAsync();
-
-            stats.CompanyQRCodes = companyQRCodes.Count;
-            stats.CompanyUsedQRCodes = companyQRCodes.Count(q => q.NumeroChiamate > 0);
-
-            // Dettagli per categoria
-            stats.QRCodeDetails = userQRCodes.Select(q => new QRCodeDetailViewModel
+            // Popola dropdown utenti
+            foreach (var user in groupUsers)
             {
-                QRCode = q,
-                CreatedBy = currentUser,
-                TotalCalls = q.NumeroChiamate,
-                LastCall = q.CallHistory?.OrderByDescending(c => c.DataChiamata).FirstOrDefault()?.DataChiamata
-            }).ToList();
+                stats.GroupUsers.Add(new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = user.Id,
+                    Text = $"{user.LastName} {user.FirstName}",
+                    Selected = user.Id == userId
+                });
+            }
 
-            await LogActivity("Visualizzazione", "Statistiche", 0, "Utente ha visualizzato le statistiche");
+            // Query QR Codes in base al filtro utente
+            IQueryable<QRCode> qrCodesQuery = _context.QRCodes
+                .Include(q => q.CreatedBy)
+                .Where(q => q.CreatedBy != null && q.CreatedBy.CompanyId == currentUser.CompanyId);
+
+            
+
+
+            var qrCodes = await qrCodesQuery.ToListAsync();
+            if (!string.IsNullOrEmpty(userId))
+            {
+             var QRCodess = await qrCodesQuery.Where(q => q.UserId == userId).ToListAsync();
+            stats.QRCodes = QRCodess;
+            }
+            else {
+
+                stats.QRCodes = qrCodes;
+            }
+
+
+                
+            stats.TotalQRCodes = qrCodes.Count;
+            stats.UsedQRCodes = qrCodes.Count(q => q.NumeroChiamate > 0);
+            stats.TotalCalls = qrCodes.Sum(q => q.NumeroChiamate);
+            stats.AverageCalls = qrCodes.Count > 0 ? (decimal)stats.TotalCalls / qrCodes.Count : 0;
+
+            // Statistiche personali
+            stats.PersonalQRCodes = qrCodes.Count(q => q.UserId == currentUserId);
+            stats.PersonalUsedQRCodes = qrCodes.Count(q => q.UserId == currentUserId && q.NumeroChiamate > 0);
+            stats.CompanyQRCodes = qrCodes.Count;
+            stats.CompanyUsedQRCodes = qrCodes.Count(q => q.NumeroChiamate > 0);
+
+            await LogActivity("Visualizzazione", "Statistiche", 0, $"Utente ha visualizzato le statistiche{(userId != null ? $" filtrato per utente {userId}" : "")}");
 
             return View(stats);
         }

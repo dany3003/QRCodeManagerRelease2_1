@@ -93,19 +93,23 @@
                                 @foreach (var qr in Model)
                                 {
                                     <tr>
-                                        <td>@qr.Content</td>
+                                        <td style="max-width: 180px; word-wrap: break-word; white-space: normal;">@qr.Content</td>
                                         <td>
                                             @if (!string.IsNullOrEmpty(qr.DestinationLink))
                                             {
-                                                <a href="@qr.DestinationLink" target="_blank">@qr.DestinationLink</a>
-                                            }
+                                                <a href="@qr.DestinationLink" target="_blank" title="@qr.DestinationLink">
+                                                    @(qr.DestinationLink.Length > 20
+                                                                                                ? qr.DestinationLink.Substring(0, 20) + "..."
+                                                                                                : qr.DestinationLink)
+                                        </a>
+                                                                                }
                                             else
                                             {
                                                 <span class="text-muted">-</span>
                                             }
                                         </td>
                                         <td>@(qr.CodiceUtilizzo ?? "-")</td>
-                                        <td>@(qr.Details ?? "-")</td>
+                                        <td style="max-width: 180px; word-wrap: break-word; white-space: normal;">@(qr.Details ?? "-")</td>
                                         <td>
                                             <span class="badge bg-info">@qr.NumeroChiamate</span>
                                         </td>
@@ -153,8 +157,7 @@
                                             }
                                         </td>
                                     </tr>
-                                    { {/* IL CODICE DEL MODALE È STATO SPOSTATO FUORI DAL CICLO E DAL CONTESTO DELLA TABELLA */} }
-                                }
+                                                                   }
                             </tbody>
                         </table>
                     </div>
@@ -165,8 +168,7 @@
 
     <hr />
 
-    {{/* BLOCCO DEI MODALI SPOSTATO PER CORREGGERE IL BUG DI VISUALIZZAZIONE SU SAFARI */}}
-    @foreach (var qr in Model)
+     @foreach (var qr in Model)
     {
         <div class="modal fade" id="editModal@(qr.Id)" tabindex="-1" aria-labelledby="editModalLabel@(qr.Id)" aria-hidden="true">
             <div class="modal-dialog">

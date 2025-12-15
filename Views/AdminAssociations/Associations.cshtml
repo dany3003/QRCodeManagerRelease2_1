@@ -128,17 +128,23 @@
                                 @foreach (var qr in Model)
                                 {
                                     <tr>
-                                        <td>@qr.Content</td>
+                                         <td style="max-width: 180px; word-wrap: break-word; white-space: normal;">
+                                        @qr.Content
+                                    </td>
                                         <td>
-                                            @if (!string.IsNullOrEmpty(qr.DestinationLink))
-                                            {
-                                                <a href="@qr.DestinationLink" target="_blank">@qr.DestinationLink</a>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">-</span>
-                                            }
-                                        </td>
+                                        @if (!string.IsNullOrEmpty(qr.DestinationLink))
+                                        {
+                                            <a href="@qr.DestinationLink" target="_blank" title="@qr.DestinationLink">
+                                                @(qr.DestinationLink.Length > 20
+                                                                                        ? qr.DestinationLink.Substring(0, 20) + "..."
+                                                                                        : qr.DestinationLink)
+                                    </a>
+                                                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
                                         <td>@(qr.CodiceUtilizzo ?? "-")</td>
                                         <td>@(qr.CreatedBy?.Email ?? "-")</td>
                                         <td>
